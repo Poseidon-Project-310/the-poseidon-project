@@ -39,7 +39,7 @@ class RestaurantOwner (User):
         restaurant.menu.append(item)
     # removes a menu item from the restaurant's menu
     def remove_menu_item(self, restaurant: "Restaurant", item: "MenuItem"):
-        restaurant.menu = [i for i in restaurant.menu if i != item.id]
+        restaurant.menu = [i for i in restaurant.menu if i.id != item.id]
     # updates a menu item in the restaurant's menu
     def update_menu_item(
             self,
@@ -64,9 +64,6 @@ class RestaurantOwner (User):
         if available is not None:
             item.availability = available
         
-    # Views orders for the restaurant, returns a list of orders
-    def view_orders(self) -> List["Order"]:
-        return []
     # Sets the availability of a menu item
     def set_item_availability(self, item: "MenuItem", status: bool ):
         item.availability = status
