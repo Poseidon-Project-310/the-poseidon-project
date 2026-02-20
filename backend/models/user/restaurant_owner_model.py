@@ -69,7 +69,7 @@ class RestaurantOwner (User):
             item.description = description
         if price is not None:
             if price < 0:
-                raise ValueError("Price cannot be negative")
+                raise ValueError ("Price cannot be negative")
             item.price = price
         if category is not None:
             item.category = category
@@ -86,5 +86,5 @@ class RestaurantOwner (User):
                              restaurant: "backend.models.restaurant.restaurant_model.Restaurant",
                              status: bool):
         if not isinstance(status, bool):
-            raise ValueError("Status must be a boolean")
+            raise ValueError ("Status must be a boolean")
         restaurant.is_open = status
