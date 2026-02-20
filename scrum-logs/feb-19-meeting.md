@@ -8,3 +8,4 @@ Work done:
 3) Fabiha completed her reviews of Grayson and Anjana's code and also finished her own PR.
 4) All present agreed on Grayson's proposed timeline for M3.\
 5) Fabiha wrote the scrum log.
+6) Grayson split work between team members, with input from Anjana and Fabiha.
