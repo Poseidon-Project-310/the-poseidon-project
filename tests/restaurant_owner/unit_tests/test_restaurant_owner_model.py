@@ -55,7 +55,7 @@ def test_update_restaurant_multiple_fields(owner, restaurant):
 # Test updating with no fields (should not change anything)
 def test_update_restaurant_no_fields(owner, restaurant):
     restaurant.address = "123 Main St"
-    owner.update_info(restaurant, phone= 555-1234)
+    owner.update_info(restaurant, phone= "555-1234")
     assert restaurant.address == "123 Main St"
 
 '''Adding menu items'''
