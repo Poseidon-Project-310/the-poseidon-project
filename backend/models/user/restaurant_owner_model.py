@@ -4,12 +4,15 @@ from backend.models.user.user_model import User
 import backend.models.restaurant.restaurant_model
 import backend.models.menu_item.menu_item_model
 
+
 class RestaurantOwner (User):
     # Inherit info from user
 
-    # Allows the restaurant owner to create a restaurant 
-    def create_restaurant(self, name: str) -> "backend.models.restaurant.restaurant_model.Restaurant":
-        return backend.models.restaurant.restaurant_model.Restaurant(id=0, name=name, owner=self)
+    # Allows the restaurant owner to create a restaurant
+    def create_restaurant(self, name: str
+                          ) -> "backend.models.restaurant.restaurant_model.Restaurant":
+        return backend.models.restaurant.restaurant_model.Restaurant(
+            id=0, name=name, owner=self)
 
     def update_info(
             self,
@@ -37,13 +40,17 @@ class RestaurantOwner (User):
             restaurant.open_time = open_time
         if close_time is not None:
             restaurant.close_time = close_time
-    
+
     # adds a menu item to the restaurant's menu
-    def add_menu_item(self, restaurant: "backend.models.restaurant.restaurant_model.Restaurant", item: "backend.models.menu_item.menu_item_model.MenuItem"):
+    def add_menu_item(self, restaurant: "backend.models.restaurant.restaurant_model.Restaurant",
+                      item: "backend.models.menu_item.menu_item_model.MenuItem"):
         restaurant.menu.append(item)
+
     # removes a menu item from the restaurant's menu
-    def remove_menu_item(self, restaurant: "backend.models.restaurant.restaurant_model.Restaurant", item: "backend.models.menu_item.menu_item_model.MenuItem"):
+    def remove_menu_item(self, restaurant: "backend.models.restaurant.restaurant_model.Restaurant",
+                         item: "backend.models.menu_item.menu_item_model.MenuItem"):
         restaurant.menu = [i for i in restaurant.menu if i.id != item.id]
+
     # updates a menu item in the restaurant's menu
     def update_menu_item(
             self,
@@ -54,7 +61,8 @@ class RestaurantOwner (User):
             category: str = None,
             available: bool = None
     ):
-        # Updates menu item, only updates if value is not None, also checks if price is negative
+        # Updates menu item, only updates if value is not None
+        # also checks if price is negative
         if name is not None:
             item.name = name
         if description is not None:
@@ -67,13 +75,16 @@ class RestaurantOwner (User):
             item.category = category
         if available is not None:
             item.availability = available
-        
+ 
     # Sets the availability of a menu item
-    def set_item_availability(self, item: "backend.models.menu_item.menu_item_model.MenuItem", status: bool ):
+    def set_item_availability(self, item: "backend.models.menu_item.menu_item_model.MenuItem",
+                              status: bool ):
         item.availability = status
 
     # Sets the restaurant's open and close times
-    def set_open_close_times(self, restaurant: "backend.models.restaurant.restaurant_model.Restaurant", status: bool):
+    def set_open_close_times(self,
+                             restaurant: "backend.models.restaurant.restaurant_model.Restaurant",
+                             status: bool):
         if not isinstance(status, bool):
             raise ValueError("Status must be a boolean")
         restaurant.is_open = status

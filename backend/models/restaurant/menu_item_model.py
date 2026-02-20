@@ -1,7 +1,8 @@
 # backend/models/restaurant/restaurant_model.py
 
 class MenuItem:
-    def __init__(self, id: int, name: str, price: float, availability: bool = True):
+    def __init__(self, id: int, name: str, price: float,
+                 availability: bool = True):
         self.id = id
         self.name = name
         self.price = price
