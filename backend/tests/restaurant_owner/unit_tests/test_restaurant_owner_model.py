@@ -1,7 +1,7 @@
 # tests/restaurant_owner/unit_tests/test_restaurant_owner_model.py
 import pytest
 from unittest.mock import MagicMock
-from restaurant_owner_model import RestaurantOwner
+from backend.models.restaurant_owner.restaurant_owner_model import RestaurantOwner
 
 '''Fixtures to create mock data for testing'''
 
