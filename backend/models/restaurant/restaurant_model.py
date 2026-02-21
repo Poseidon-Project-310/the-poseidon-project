@@ -2,6 +2,7 @@
 
 from backend.models.user.restaurant_owner_model import RestaurantOwner
 
+
 class Restaurant:
     def __init__(self, id: int, name: str, owner: "RestaurantOwner"):
         self.id = id
@@ -17,7 +18,7 @@ class Restaurant:
         self.open_time = None
         self.close_time = None
 
-        # Status 
+        # Status
         self.is_open = False
 
         # Menu
