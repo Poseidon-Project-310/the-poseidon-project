@@ -9,8 +9,9 @@ class RestaurantOwner (User):
     # Inherit info from user
 
     # Allows the restaurant owner to create a restaurant
-    def create_restaurant(self, name: str
-                          ) -> "backend.models.restaurant.restaurant_model.Restaurant":
+    def create_restaurant(self, name: str) -> "Restaurant":
+        if not name or name.strip() == "":
+            raise ValueError("Restaurant name cannot be empty")
         return backend.models.restaurant.restaurant_model.Restaurant(
             id=0, name=name, owner=self)
 

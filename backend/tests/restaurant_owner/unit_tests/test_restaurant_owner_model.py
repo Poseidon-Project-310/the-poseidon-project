@@ -70,7 +70,7 @@ def test_remove_menu_item(owner, restaurant, menu_item):
 
 # Functional Test: Updating price and availability of a menu item
 def test_update_menu_item(owner, menu_item):
-    owner.update_menu_item(menu_item.id, price=10.99, available=False)
+    owner.update_menu_item(menu_item, price=10.99, available=False)
     assert menu_item.price == 10.99 # Check if price was updated
     assert menu_item.availability == False # Check if availability was updated
 
