@@ -79,6 +79,7 @@ def test_remove_menu_item(owner, restaurant, menu_item):
     owner.add_menu_item(restaurant, menu_item)
     owner.remove_menu_item(restaurant, menu_item)
     assert menu_item not in restaurant.menu # Check if item was removed
+
 # Test removing an item that doesn't exist (should not raise an error)
 def test_remove_nonexistent_menu_item(owner, restaurant, menu_item):
     item = MagicMock()
@@ -89,6 +90,7 @@ def test_remove_nonexistent_menu_item(owner, restaurant, menu_item):
     owner.add_menu_item(restaurant, menu_item)
     owner.remove_menu_item(restaurant, item) # Try to remove an item that was not added
     assert menu_item in restaurant.menu # Check if original item is still there
+
 # Test removing one item when multiple items are present
 def test_remove_correct_menu_item(owner, restaurant, menu_item):
     item1 = MagicMock(id=1)
@@ -101,16 +103,17 @@ def test_remove_correct_menu_item(owner, restaurant, menu_item):
 
 '''Updating menu items'''
 # Test updating price and availability of a menu item
-def test_update_menu_item(owner, restaurant, menu_item):
-    owner.add_menu_item(restaurant, menu_item)
-    owner.update_menu_item(restaurant, menu_item.id, price=10.99, availability=False)
+def test_update_menu_item(owner, menu_item):
+    owner.update_menu_item(menu_item, price=10.99, availability=False)
     assert menu_item.price == 10.99 # Check if price was updated
     assert menu_item.availability == False # Check if availability was updated
+
 # Test updating negative price of a menu item
 def test_update_menu_item_negative_price(owner, restaurant, menu_item):
     owner.add_menu_item(restaurant, menu_item)
     with pytest.raises(ValueError, match="Price cannot be negative"):
         owner.update_menu_item(restaurant, menu_item.id, price=-5.99) # Try to set a negative price
+
 # Test updating nonexistent menu item
 def test_update_menu_item_nonexistent(owner, restaurant):
     with pytest.raises(ValueError, match="Menu item not found"):

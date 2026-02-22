@@ -82,7 +82,7 @@ class RestaurantOwner (User):
         item.availability = status
 
     # Sets the restaurant's open and close times
-    def set_open_close_times(self,
+    def set_open_closed(self,
                              restaurant: "backend.models.restaurant.restaurant_model.Restaurant",
                              status: bool):
         if not isinstance(status, bool):
