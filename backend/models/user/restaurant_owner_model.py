@@ -2,7 +2,7 @@
 
 from backend.models.user.user_model import User
 import backend.models.restaurant.restaurant_model
-import backend.models.menu_item.menu_item_model
+import backend.models.restaurant.menu_item_model
 
 
 class RestaurantOwner (User):
