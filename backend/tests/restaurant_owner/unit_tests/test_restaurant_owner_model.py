@@ -76,7 +76,7 @@ def test_add_menu_item(owner, restaurant, menu_item):
 def test_remove_menu_item(owner, restaurant, menu_item):
     owner.add_menu_item(restaurant, menu_item)
     owner.remove_menu_item(restaurant, menu_item)
-    assert menu_item not in restaurant.menu 
+    assert menu_item not in restaurant.menu
 
 
 '''Updating menu items'''
@@ -86,13 +86,13 @@ def test_remove_menu_item(owner, restaurant, menu_item):
 def test_update_menu_item(owner, menu_item):
     owner.update_menu_item(menu_item, price=10.99, available=False)
     assert menu_item.price == 10.99  # Check if price was updated
-    assert menu_item.availability == False  # Check if availability was updated
+    assert menu_item.availability  # Check if availability was updated
 
 
 # Negative Test: Updating negative price of a menu item
 def test_update_menu_item_negative_price(owner, menu_item):
     with pytest.raises(ValueError, match="Price cannot be negative"):
-        owner.update_menu_item(menu_item, price=-5.99)  # Try to set a negative price
+        owner.update_menu_item(menu_item, price=-5.99)
 
 
 # Edge Case: Test updating price of a menu item to zero for free items
@@ -107,9 +107,9 @@ def test_update_menu_item_zero_price(owner, menu_item):
 # Functional Test: Setting item availability
 def test_set_item_availability(owner, menu_item):
     owner.set_item_availability(menu_item, True)
-    assert menu_item.availability == True  # Check if item is available
+    assert menu_item.availability  # Check if item is available
     owner.set_item_availability(menu_item, False)
-    assert menu_item.availability == False  # Check if item is unavailable
+    assert menu_item.availability  # Check if item is unavailable
 
 
 '''Set restaurant open/closed'''
@@ -118,15 +118,15 @@ def test_set_item_availability(owner, menu_item):
 # Functional Test: Setting restaurant to open and then closed
 def test_set_open_closed(owner, restaurant):
     owner.set_open_closed(restaurant, True)
-    assert restaurant.is_open == True  # Check if restaurant is open
+    assert restaurant.is_open  # Check if restaurant is open
     owner.set_open_closed(restaurant, False)
-    assert restaurant.is_open == False  # Check if restaurant is closed
+    assert restaurant.is_open  # Check if restaurant is closed
 
 
 # Negative Test: Setting restaurant open/closed with invalid status
 def test_set_open_closed_invalid_status(owner, restaurant):
     with pytest.raises(ValueError, match="Status must be a boolean"):
-        owner.set_open_closed(restaurant, "open")  # Try to set an invalid status
+        owner.set_open_closed(restaurant, "open")
 
 
 '''Test restaurant operating hours'''
@@ -134,7 +134,7 @@ def test_set_open_closed_invalid_status(owner, restaurant):
 
 # Functional Test: Updating restaurant operating hours
 def test_update_restaurant_hours(owner, restaurant):
-    owner.update_info(restaurant, open_time="09:00", close_time="21:00")  # Update operating hours
+    owner.update_info(restaurant, open_time="09:00", close_time="21:00")
     assert restaurant.open_time == "09:00"  # Check if open time was updated
     assert restaurant.close_time == "21:00"  # Check if close time was updated
 
@@ -145,4 +145,4 @@ def test_update_restaurant_hours_partial(owner, restaurant):
     restaurant.close_time = "20:00"  # Set initial close time
     owner.update_info(restaurant, open_time="10:00")  # Update only open time
     assert restaurant.open_time == "10:00"  # Check if open time was updated
-    assert restaurant.close_time == "20:00"  # Check if close time remains unchanged
+    assert restaurant.close_time == "20:00"
