@@ -44,7 +44,7 @@ class RestaurantOwner (User):
 
     # adds a menu item to the restaurant's menu
     def add_menu_item(self, restaurant: "backend.models.restaurant.restaurant_model.Restaurant",
-                      item: "backend.models.menu_item.menu_item_model.MenuItem"):
+                      item: "backend.models.restaurant.menu_item_model.MenuItem"):
         restaurant.menu.append(item)
 
     # removes a menu item from the restaurant's menu
@@ -55,7 +55,7 @@ class RestaurantOwner (User):
     # updates a menu item in the restaurant's menu
     def update_menu_item(
             self,
-            item: "backend.models.menu_item.menu_item_model.MenuItem",
+            item: "backend.models.restaurant.menu_item_model.MenuItem",
             name: str = None,
             description: str = None,
             price: float = None,
