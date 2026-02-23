@@ -3,6 +3,12 @@ from dataclasses import field
 from datetime import time
 from enum import Enum
 
+# Read by VSCode for type checking but python ignores
+if TYPE_CHECKING:
+    from backend.models.user.restaurant_owner_model import RestaurantOwner
+    from backend.models.restaurant.menu_item_model import MenuItem
+
+
 # Enum for days of the week
 # Allows easy ref to days consistently
 class DayOfWeek(Enum):
@@ -23,19 +29,28 @@ class BusinessHours:
 
 # Restaurant information
 class Restaurant:
-    id: int
-    name: str
-    owner: RestaurantOwner
-    address: str = ""
-    city: str = ""
-    postal_code: str = ""
-    phone: str = ""
-    cuisine_type: str = ""
-    business_hours: List[BusinessHours] = field(default_factory=list)
-    rating: float = 0.0
-    total_reviews: int = 0
-    reviews: List[Review] = field(default_factory=list) # new list created so no duplicates
-    menu: List[MenuItem] = field(default_factory=list)
+    def __init__(self, id: int, name: str, owner: "RestaurantOwner"):
+        self.id = id
+        self.name = name
+        self.owner = owner
+
+        # Operational details
+        self.address = ""
+        self.city = ""
+        self.postal_code = ""
+        self.phone = ""
+        self.cuisine_type = ""
+        self.business_hours = []
+        self.open_time = None
+        self.close_time = None
+        self.rating = 0.0
+        self.total_reviews = 0
+        self.reviews = [] # new list created so no duplicates
+        # Status
+        self.is_open = False
+
+        # Menu
+        self.menu = []
 
     # getter
     def get_menu(self) -> List[MenuItem]:
@@ -50,6 +65,3 @@ class Restaurant:
         # Check if restaurant is currently open
         # implementation would check current time against business hours
         pass
-
-
-    
