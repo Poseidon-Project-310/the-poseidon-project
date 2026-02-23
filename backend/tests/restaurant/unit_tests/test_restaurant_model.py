@@ -74,6 +74,7 @@ def test_get_average_rating_round_up(restaurant):
 
 '''Update attributes'''
 
+
 # Update hours and address
 def test_update_attributes(restaurant):
     restaurant.open_time = "09:00"
