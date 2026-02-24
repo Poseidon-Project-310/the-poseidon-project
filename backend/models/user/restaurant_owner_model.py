@@ -37,15 +37,17 @@ class RestaurantOwner (User):
     def update_menu_item(self, item, **kwargs):
         # Updates menu item, only updates if value is not None
         # also checks if price is negative
-        price = kwargs.get("price")
-        if price is not None:
-            if price < 0:
+        if 'price' in kwargs:
+            if kwargs['price'] < 0:
                 raise ValueError("Price cannot be negative")
-            item.price = price
+            item.price = kwargs['price']
 
-        available = kwargs.get("availability")
-        if available is not None:
-            item.availability = available
+        if 'available' in kwargs:
+            item.availability = kwargs['available']
+        
+        for key, value in kwargs.items():
+            if key not in ['price', 'available'] and hasattr(item, key):
+                setattr(item, key, value)
 
     # Sets the availability of a menu item
     def set_item_availability(self, item, status):
