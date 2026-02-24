@@ -2,7 +2,6 @@
 
 from readline import backend
 
-from backend.models.restaurant.menu_item_model import MenuItem
 from backend.models.user.user_model import User
 
 class Customer(User):
