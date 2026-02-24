@@ -1,7 +1,5 @@
 # Customer Model class
 
-from readline import backend
-
 from backend.models.user.user_model import User
 
 class Customer(User):
