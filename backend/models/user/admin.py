@@ -2,17 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from backend.models.user.init.user import User
-from backend.models.user.roles import ADMIN, ALL_ROLES
+from backend.models.user.user_model import User
 
 
 class Admin(User):
     # Inherit info from User
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if self.role != ADMIN:
-            raise ValueError("Admin must have role='admin'")
 
     # -------------------------
     # Admin "Administrator" page
@@ -21,13 +15,8 @@ class Admin(User):
         return {"message": "Admin dashboard placeholder"}
 
     # -------------------------
-    # Role assignment + credentials
+    # Credentials
     # -------------------------
-    def assign_role(self, user: User, new_role: str) -> None:
-        if new_role not in ALL_ROLES:
-            raise ValueError(f"Role must be one of {ALL_ROLES}")
-        user.role = new_role
-
     def modify_credentials(
         self,
         user: User,
@@ -73,7 +62,7 @@ class Admin(User):
         return delivery_info is not None
 
     # -------------------------
-    # Menu availability / menu edits (admin oversight)
+    # Menu availability / edits
     # -------------------------
     def manage_menu_availability(self, item: "MenuItem", available: bool) -> None:
         if hasattr(item, "availability"):
@@ -115,7 +104,7 @@ class Admin(User):
         return []
 
     # -------------------------
-    # Reviews (flagging/moderation/monitoring)
+    # Reviews
     # -------------------------
     def view_ratings_and_reviews_for_monitoring(self) -> List["Review"]:
         return []
@@ -130,7 +119,7 @@ class Admin(User):
         return
 
     # -------------------------
-    # Generic pagination helper
+    # Pagination helper
     # -------------------------
     def list_paginated_results(self, items: List[Any], page: int = 1, page_size: int = 10) -> Dict[str, Any]:
         if page < 1:
@@ -139,4 +128,9 @@ class Admin(User):
             page_size = 10
         start = (page - 1) * page_size
         end = start + page_size
-        return {"page": page, "page_size": page_size, "total": len(items), "results": items[start:end]}
+        return {
+            "page": page,
+            "page_size": page_size,
+            "total": len(items),
+            "results": items[start:end],
+        }
