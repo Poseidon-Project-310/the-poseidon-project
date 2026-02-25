@@ -36,9 +36,10 @@ def test_restaurant_initialization(restaurant, mock_owner):
 """Average rating"""
 
 
-# Edge Case: Test rating calculation with no reviews
+# Get average rating with no reviews
 def test_get_average_rating_no_reviews(restaurant):
-    assert restaurant.get_average_rating() == 0.0  # Empty
+    restaurant.reviews = []
+    assert restaurant.get_average_rating() == 0.0
 
 
 # Positive Functional Test: Rating calculation with multiple reviews
