@@ -18,19 +18,18 @@ class Restaurant:
         self.name = name
         self.owner = owner
 
+        self.open_time: str = ""
+        self.close_time: str = ""
+        self.address = None
+        self.phone = None
+        self.is_open: bool = False
+        self.menu: List["MenuItem"] = []
+        self.reviews: List = []
+        self.total_reviews: int
+
         # Set all kwargs as attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
-
-        # Status
-        self.is_open: bool = False
-
-        # Menu
-        self.menu: List["MenuItem"] = []
-
-        # Reviews
-        self.reviews: List = []
-        self.total_reviews: int
     
     def total_reviews(self) -> int:
         return len(self.reviews)
