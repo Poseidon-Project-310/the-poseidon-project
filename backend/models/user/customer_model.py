@@ -1,6 +1,7 @@
 # Customer Model class
 
 from backend.models.user.user_model import User
+from backend.models.restaurant.menu_item_model import MenuItem
 
 class Customer(User):
     # Inherit info from user
@@ -13,20 +14,13 @@ class Customer(User):
         self.postal_code = postal_code
         self.cart = {}  # Initialize an empty cart for the customer
         
-    def update_info(self, email: str = None, phone: str = None, address: str = None, city: str = None, postal_code: str = None) -> None:
+    def update_info(self, **kwargs):
         # Update customer's personal information
-        if email is not None:
-            self.email = email
-        if phone is not None:
-            self.phone = phone
-        if address is not None:
-            self.address = address
-        if city is not None:
-            self.city = city
-        if postal_code is not None:
-            self.postal_code = postal_code
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
         
-    def add_to_cart(self, item: "MenuItem", quantity: int) -> None:
+    def add_to_cart(self, item: MenuItem, quantity: int) -> None:
         # Adds a menu item to the customer's cart with the specified quantity
         # TODO: Replace with actual cart implementation once Cart class is created
         if quantity <= 0:
@@ -37,6 +31,16 @@ class Customer(User):
             self.cart[item.id] += quantity
         else:
             self.cart[item.id] = quantity
+
+    def remove_from_cart(self, item: MenuItem) -> None:
+        # Removes a menu item from the customer's cart
+        if item.id in self.cart:
+            del self.cart[item.id]
+
+    def clear_cart(self) -> None:
+        # Clears the customer's cart
+        self.cart = {}
+
 
     def place_order(self) -> "Order":
         # Places an order based on the items in the customer's cart
