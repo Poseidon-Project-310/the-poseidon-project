@@ -1,20 +1,24 @@
 # backend/tests/restaurant/unit_tests/test_restaurant_model.py
 import pytest
 from backend.models.restaurant.restaurant_model import Restaurant
-from unittest.mock import MagicMock
+from backend.models.restaurant.menu_item_model import MenuItem
 
 
 @pytest.fixture
-def mock_owner():
-    return MagicMock()
-
+def sample_menu():
+    return [
+        MenuItem(name="Burger", price=9.99),
+        MenuItem(name="Pizza", price=12.99)
+    ]
 
 @pytest.fixture
-def restaurant(mock_owner):
+def sample_restaurant(sample_menu):
     return Restaurant(
-        id=1,
         name="Testaurant",
-        owner=mock_owner
+        open_time="09:00",
+        close_time="17:00",
+        distance_from_user=2.5,
+        menu=sample_menu
     )
 
 
@@ -22,72 +26,45 @@ def restaurant(mock_owner):
 
 
 # Positive Functional Test: The restaurant model initializes correctly with attributes
-def test_restaurant_initialization(restaurant, mock_owner):
-    assert restaurant.id == 1
+def test_restaurant_initialization(restaurant):
     assert restaurant.name == "Testaurant"
-    assert restaurant.owner == mock_owner
-    assert restaurant.open_time == ""
-    assert restaurant.close_time == ""
-    assert not restaurant.is_open
-    assert restaurant.menu == []
-    assert restaurant.reviews == []
-
-
-"""Average rating"""
-
-
-# Get average rating with no reviews
-def test_get_average_rating_no_reviews(restaurant):
-    restaurant.reviews = []
-    assert restaurant.get_average_rating() == 0.0
-
-
-# Positive Functional Test: Rating calculation with multiple reviews
-def test_get_average_rating_multiple_reviews(restaurant):
-    restaurant.reviews = [
-        MagicMock(rating=4.0),
-        MagicMock(rating=5.0),
-        MagicMock(rating=3.0)
-    ]
-    assert restaurant.get_average_rating() == 4.0
-
-
-# Edge Case: Test rating round down
-def test_get_average_rating_round_down(restaurant):
-    restaurant.reviews = [
-        MagicMock(rating=4.0),
-        MagicMock(rating=4.0),
-        MagicMock(rating=5.0)
-    ]
-    assert restaurant.get_average_rating() == 4.3
-
-
-# Edge Case: Test rating round up
-def test_get_average_rating_round_up(restaurant):
-    restaurant.reviews = [
-        MagicMock(rating=4.0),
-        MagicMock(rating=5.0),
-        MagicMock(rating=5.0)
-    ]
-
-    assert restaurant.get_average_rating() == 4.7
-
-
-'''Update attributes'''
-
-
-# Functional Test: Update hours and address
-def test_update_attributes(restaurant):
-    restaurant.open_time = "09:00"
-    restaurant.close_time = "21:00"
-    restaurant.address = "123 Test St"
-
     assert restaurant.open_time == "09:00"
-    assert restaurant.address == "123 Test St"
+    assert restaurant.close_time == "17:00"
+    assert sample_restaurant.distance_from_user == 2.5
+    assert len(restaurant.menu) == 2
 
+# Positive Functional Test: Tests that user can store before publishing
+def test_owner_publish_flow(restaurant):
+    assert restaurant.is_published == False is False
 
-# Negative Test: Test hours with empty strings and not None
-def test_hours_empty_strings(restaurant):
-    # Helps if we need to get length of hours and prevent NoneType errors
-    assert isinstance(restaurant.open_time, str)
-    assert restaurant.open_time == ""
+    success = restaurant.publish()
+    assert success is True
+    assert restaurant.is_published is True
+
+# Positive Functional Test: Tests that different perspectives can be used
+def test_admin_customer_perspective(restaurant):
+    # Customer perspective should not see unpublished restaurant
+    assert restaurant.get_view("Customer") is None
+
+    # Restaurant owner/ admin should see unpublished restaurant
+    owner_view = restaurant.get_view("Restaurant")
+    assert owner_view is not None
+    assert owner_view["name"] == "Testaurant"
+
+    restaurant.publish()
+    assert restaurant.get_view("Customer") is not None
+
+# Negative Edge Case: Cannot publish without menu
+def test_publish_without_menu():
+    empty_menu_restaurant = Restaurant("EmptyMenu", "10:00", "20:00", 1.0, [])
+    success = empty_menu_restaurant.publish()
+    assert success is False
+    assert empty_menu_restaurant.is_published is False
+    assert empty_menu_restaurant.get_view("Customer") is None
+
+# Positive Functional Test: The menu item models are stored correctly
+def test_menu_item_initialization(sample_menu):
+    item = sample_menu[0]
+    assert item.name == "Burger"
+    assert item.price == 9.99
+    assert isinstance(item.id, str)
