@@ -104,3 +104,19 @@ class UserRepository:
                 self._save_all(users)
                 return u
         return None
+    
+    def reset_password_by_email(self, email: str, new_password: str):
+        users = self._load_all()
+
+        for u in users:
+            if u["email"] == email:
+                u["password_hash"] = User.hash_password(new_password)
+
+                # safety cleanup
+                u.pop("password", None)
+                u.pop("raw_password", None)
+
+                self._save_all(users)
+                return u
+
+        return None
