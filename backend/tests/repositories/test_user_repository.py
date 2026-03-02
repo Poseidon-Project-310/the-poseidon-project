@@ -124,3 +124,24 @@ def test_update_returns_none_if_user_not_found(repo):
     assert repo.update_username(999, "ghost_user") is None
     assert repo.update_email(999, "ghost@gmail.com") is None
     assert repo.update_password(999, "Nope123!!") is None
+
+#FR -4 feat 1
+def test_reset_password_by_email_hashes_and_updates(repo):
+    repo.create({
+        "username": "anjana",
+        "email": "anjana.ubco@gmail.com",
+        "password": "OldPw123!!"
+    })
+
+    new_pw = "ResetPw999!!"
+    updated = repo.reset_password_by_email("anjana.ubco@gmail.com", new_pw)
+
+    assert updated is not None
+    assert "password_hash" in updated
+    assert updated["password_hash"] != new_pw
+    assert "password" not in updated
+
+
+def test_reset_password_returns_none_if_email_not_found(repo):
+    result = repo.reset_password_by_email("ghost@gmail.com", "Whatever123!!")
+    assert result is None
