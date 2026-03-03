@@ -1,5 +1,5 @@
 from backend.models.user.restaurant_owner_model import RestaurantOwner
-from backend.models.user.admin_model import Admin
+from backend.models.user.admin import Admin
 from backend.models.restaurant.restaurant_model import Restaurant
 
 
