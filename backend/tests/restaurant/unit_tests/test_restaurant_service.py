@@ -15,7 +15,7 @@ def restaurant_service():
 
 # Positive functionality test: A restaurant owner should be able to create a restaurant
 def test_create_restaurant_as_owner(restaurant_service):
-    user = RestaurantOwner(id=1,username="Grayson",password_hash="hashed_pw")
+    user = RestaurantOwner(id=1,name="Grayson",password_hash="hashed_pw")
     data = {"name": "Testaurant", "location": "123 Test St"}
 
     result = restaurant_service.register_restaurant(user, data)

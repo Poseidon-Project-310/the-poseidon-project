@@ -14,7 +14,7 @@ class RestaurantService:
         """
         # Check if user is an admin or owner
         if not (isinstance(user, RestaurantOwner) or isinstance(user, Admin)):
-            return {"success": False, "error": "unathorized"}
+            return {"success": False, "error": "unauthorized"}
         
         try:
             new_restaurant = Restaurant(
