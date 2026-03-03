@@ -26,33 +26,33 @@ def sample_restaurant(sample_menu):
 
 
 # Positive Functional Test: The restaurant model initializes correctly with attributes
-def test_restaurant_initialization(restaurant):
-    assert restaurant.name == "Testaurant"
-    assert restaurant.open_time == "09:00"
-    assert restaurant.close_time == "17:00"
+def test_restaurant_initialization(sample_restaurant):
+    assert sample_restaurant.name == "Testaurant"
+    assert sample_restaurant.open_time == "09:00"
+    assert sample_restaurant.close_time == "17:00"
     assert sample_restaurant.distance_from_user == 2.5
-    assert len(restaurant.menu) == 2
+    assert len(sample_restaurant.menu) == 2
 
 # Positive Functional Test: Tests that user can store before publishing
-def test_owner_publish_flow(restaurant):
-    assert restaurant.is_published == False is False
+def test_owner_publish_flow(sample_restaurant):
+    assert sample_restaurant.is_published == False is False
 
-    success = restaurant.publish()
+    success = sample_restaurant.publish()
     assert success is True
-    assert restaurant.is_published is True
+    assert sample_restaurant.is_published is True
 
 # Positive Functional Test: Tests that different perspectives can be used
-def test_admin_customer_perspective(restaurant):
+def test_admin_customer_perspective(sample_restaurant):
     # Customer perspective should not see unpublished restaurant
-    assert restaurant.get_view("Customer") is None
+    assert sample_restaurant.get_view("Customer") is None
 
     # Restaurant owner/ admin should see unpublished restaurant
-    owner_view = restaurant.get_view("Restaurant")
+    owner_view = sample_restaurant.get_view("Restaurant")
     assert owner_view is not None
     assert owner_view["name"] == "Testaurant"
 
-    restaurant.publish()
-    assert restaurant.get_view("Customer") is not None
+    sample_restaurant.publish()
+    assert sample_restaurant.get_view("Customer") is not None
 
 # Negative Edge Case: Cannot publish without menu
 def test_publish_without_menu():
