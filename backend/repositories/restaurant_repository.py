@@ -1,5 +1,6 @@
 # backend/repositories/restaurant_repository.py
 from typing import List, Dict, Optional
+import uuid
 
 class RestaurantRepository:
     def __init__(self, db_connection):
@@ -16,7 +17,9 @@ class RestaurantRepository:
         # Ensure that the dictionary contains all required fields
         # Run Insert query to data store
         # Return unique restaurant id
-        pass
+        restaurant_data['id'] = str(uuid.uuid4())  # Generate unique ID for the restaurant
+        self.db.append(restaurant_data)  # Simulate inserting into data store
+        return restaurant_data['id']
 
     def update_restaurant(self, restaurant_id: str, update_data: Dict) -> bool:
         """
@@ -45,19 +48,23 @@ class RestaurantRepository:
         """
         # Query data store for restaurant with given id
         # Return restaurant details if found, else return None
-        pass
+        for restaurant in self.db:
+            if restaurant['id'] == restaurant_id:
+                return restaurant
+        return None
 
     # --- Browsing and Search ---
 
-    def get_all_paginated(self, page: int, limit: int) -> List[Dict]:
+    def get_restaurants_paginated(self, page: int, limit: int):
         """
-        Feat3-FR1 (Display closest restaurants in home page)
         Feat3-FR5 (Paginated Results)
         Retrieve subset of restaurants
         """
         # Calculate offset based on page and limit
         # Query data store for restaurants with pagination
-        pass
+        start = (page - 1) * limit
+        end = start + limit
+        return self.db[start:end]
 
     def search_restaurants_and_menu_items(self, query: str) -> List[Dict]:
         """
@@ -87,6 +94,14 @@ class RestaurantRepository:
         """
         # Query data store for all restaurants with limit and offset
         pass
+
+    def search_by_cuisine(self, cuisine: str) -> List[Dict]:
+        """
+        Feat3-FR4 (Filtering search results)
+        Search for restaurants by cuisine type
+        """
+        # Query data store for restaurants matching the specified cuisine
+        return [restaurant for restaurant in self.db if restaurant.get('cuisine') == cuisine]
 
     # --- Admin Support ---
 

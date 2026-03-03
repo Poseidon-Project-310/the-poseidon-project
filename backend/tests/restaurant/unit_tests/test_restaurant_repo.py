@@ -9,7 +9,7 @@ def restaurant_repo():
 
 # --- Restaurant Information ---
 
-def test_add_restaurant(restaurant_repo):
+def test_create_restaurant(restaurant_repo):
     # Test for Feat2-FR1: Storing information
     # Verifies data passed to repo is saved
     restaurant_data = {
@@ -27,7 +27,7 @@ def test_update_restaurant(restaurant_repo):
 
     restaurant_repo.update_restaurant(restaurant, {"address": "456 Test"})
     
-    updated_restaurant = restaurant_repo.get_restaurant_by_id(restaurant.id)
+    updated_restaurant = restaurant_repo.get_by_id(restaurant.id)
     assert updated_restaurant["address"] == "456 Test"
     assert updated_restaurant["name"] == "Testaurant"  # Ensure name is unchanged
 
