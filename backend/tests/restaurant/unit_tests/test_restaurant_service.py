@@ -18,6 +18,7 @@ def restaurant_owner():
 
 # --- FR2: Menu tagging tests ---
 
+# Positive Functional Test
 def test_add_tagged_item_success(service, mock_restaurant_repository, restaurant_owner):
     # Verify owner can add item with tags
     restauarant_id = "rest1"
