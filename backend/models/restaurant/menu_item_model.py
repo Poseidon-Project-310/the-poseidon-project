@@ -12,7 +12,7 @@ class MenuItem:
     description: str = None
     category: str = None
 
-    def __post_init__(self)
+    def __post_init__(self):
         if self.price < 0:
             raise ValueError("Price cannot be negative")
         
