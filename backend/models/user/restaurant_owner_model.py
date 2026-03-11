@@ -1,9 +1,6 @@
 # Restaurant owner model class
-
 from backend.models.restaurant.restaurant_model import Restaurant
 from backend.models.user.user_model import User
-import backend.models.restaurant.menu_item_model
-
 
 
 class RestaurantOwner(User):
@@ -15,7 +12,7 @@ class RestaurantOwner(User):
     def create_restaurant(self, name, **kwargs):
         if not name or name.strip() == "":
             raise ValueError("Restaurant name cannot be empty")
-        return Restaurant(name=name, owner = self, **kwargs)
+        return Restaurant(name=name, owner=self, **kwargs)
 
     def update_info(self, restaurant, **kwargs):
         for key, value in kwargs.items():
@@ -41,7 +38,7 @@ class RestaurantOwner(User):
 
         if 'available' in kwargs:
             item.availability = kwargs['available']
-        
+
         for key, value in kwargs.items():
             if key not in ['price', 'available'] and hasattr(item, key):
                 setattr(item, key, value)
@@ -51,9 +48,9 @@ class RestaurantOwner(User):
         item.availability = status
 
     # Sets the restaurant's open and close times
-    def set_open_closed(self, restaurant,status):
+    def set_open_closed(self, restaurant, status):
         if not isinstance(status, bool):
-            raise ValueError ("Status must be a boolean")
+            raise ValueError("Status must be a boolean")
         restaurant.is_open = status
 
     def publish_restaurant(self, restaurant: Restaurant):

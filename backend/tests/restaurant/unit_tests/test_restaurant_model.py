@@ -2,7 +2,6 @@
 import pytest
 from backend.models.restaurant.restaurant_model import Restaurant
 from backend.models.restaurant.menu_item_model import MenuItem
-from backend.models.user.restaurant_owner_model import RestaurantOwner
 
 
 @pytest.fixture
@@ -11,6 +10,7 @@ def sample_menu():
         MenuItem(name="Burger", price=9.99),
         MenuItem(name="Pizza", price=12.99)
     ]
+
 
 @pytest.fixture
 def sample_restaurant(mock_owner, sample_menu):
@@ -29,24 +29,26 @@ def sample_restaurant(mock_owner, sample_menu):
 ''' Create restaurant initialization'''
 
 
-# Positive Functional Test: The restaurant model initializes correctly with attributes
 def test_restaurant_initialization(sample_restaurant):
+    # Positive Functional Test: The restaurant model initializes correctly
     assert sample_restaurant.name == "Testaurant"
     assert sample_restaurant.open_time == 900
     assert sample_restaurant.close_time == 1700
     assert sample_restaurant.distance_from_user == 2.5
     assert len(sample_restaurant.menu) == 2
 
-# Positive Functional Test: Tests that user can store before publishing
+
 def test_owner_publish_flow(sample_restaurant):
+    # Positive Functional Test: Tests that user can store before publishing
     assert sample_restaurant.is_published == False is False
 
     success = sample_restaurant.publish()
     assert success is True
     assert sample_restaurant.is_published is True
 
-# Positive Functional Test: Tests that different perspectives can be used
+
 def test_admin_customer_perspective(sample_restaurant):
+    # Positive Functional Test: Tests that different perspectives can be used
     # Customer perspective should not see unpublished restaurant
     assert sample_restaurant.get_view("Customer") is None
 
@@ -58,8 +60,9 @@ def test_admin_customer_perspective(sample_restaurant):
     sample_restaurant.publish()
     assert sample_restaurant.get_view("Customer") is not None
 
-# Negative Edge Case: Cannot publish without menu
+
 def test_publish_without_menu(mock_owner):
+    # Negative Edge Case: Cannot publish without menu
     empty_menu_restaurant = Restaurant(
         name="EmptyMenu",
         owner=mock_owner,
@@ -74,13 +77,14 @@ def test_publish_without_menu(mock_owner):
     assert empty_menu_restaurant.is_published is False
     assert empty_menu_restaurant.get_view("Customer") is None
 
-# Positive Functional Test: The menu item models are stored correctly
+
 def test_menu_item_initialization(sample_menu):
+    # Positive Functional Test: The menu item models are stored correctly
     item = sample_menu[0]
     assert item.name == "Burger"
     assert item.price == 9.99
     assert isinstance(item.id, str)
-from unittest.mock import MagicMock
+
 
 # FR3: Validation tests
 
@@ -96,7 +100,8 @@ def test_validate_for_publish_success(mock_owner):
         menu=[MenuItem(name="Burger", price=9.99)]
     )
     restaurant.validate_for_publish()
-    
+
+
 def test_validate_for_publish_missing_field(mock_owner):
     # Negative functional test: Should not pass if missing a field
     restaurant = Restaurant(
@@ -111,6 +116,7 @@ def test_validate_for_publish_missing_field(mock_owner):
     with pytest.raises(ValueError, match="'address' is required."):
         restaurant.validate_for_publish()
 
+
 def test_validate_for_publish_invalid_types(mock_owner):
     # Negative functional test: Should not pass if type check fails
     restaurant = Restaurant(
@@ -124,6 +130,7 @@ def test_validate_for_publish_invalid_types(mock_owner):
     )
     with pytest.raises(ValueError, match="must be numbers"):
         restaurant.validate_for_publish()
+
 
 def test_validate_for_publish_logic_error(mock_owner):
     # Negative funtional test: Should not pass if logic check fails

@@ -1,7 +1,6 @@
 # tests/restaurant_owner/unit_tests/test_restaurant_owner_model.py
 import pytest
 from unittest.mock import MagicMock
-from backend.models.user.restaurant_owner_model import RestaurantOwner
 from backend.models.restaurant.menu_item_model import MenuItem
 
 '''Fixtures to create mock data for testing'''
@@ -135,6 +134,7 @@ def test_update_restaurant_hours_partial(owner, restaurant):
     owner.update_info(restaurant, open_time=1000)  # Update only open time
     assert restaurant.open_time == 1000  # Check if open time was updated
     assert restaurant.close_time == 2000
+
 
 def test_owner_prepares_restaurant_for_publishing(owner, restaurant):
     # Owner fills all fields

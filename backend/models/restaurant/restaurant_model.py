@@ -8,11 +8,13 @@ if TYPE_CHECKING:
     from backend.models.restaurant.menu_item_model import MenuItem
     from backend.models.user.restaurant_owner_model import RestaurantOwner
 
+
 @dataclass
 class Restaurant:
     name: str
     owner: 'RestaurantOwner'
-    # FR3: Explicitly define attributes instead of using **kwargs for better clarity and type checking
+    # FR3: Explicitly define attributes instead of using **kwargs
+    # for better clarity and type checking
     open_time: Optional[int] = None
     close_time: Optional[int] = None
     address: Optional[str] = None
@@ -29,7 +31,6 @@ class Restaurant:
         if role == "Customer" and not self.is_published:
             return None
         return {"name": self.name, "is_published": self.is_published}
-
 
     def publish(self) -> bool:
         try:
@@ -57,12 +58,18 @@ class Restaurant:
         for field_name, value in required_fields.items():
             # Check for missing values
             if value is None or (isinstance(value, str) and not value.strip()):
-                raise ValueError(f"Cannot publish restaurant: '{field_name}' is required and cannot be empty.")
-        
+                raise ValueError(
+                    f"Cannot publish restaurant: '{
+                        field_name}' is required and cannot be empty.")
+
         if not isinstance(self.open_time, int) or not isinstance(self.close_time, int):
             # Type checking
-            raise ValueError("Cannot publish restaurant: 'open_time' and 'close_time' must be numbers")
+            # Cannot fix flaking error without breaking code
+            raise ValueError(
+                "Cannot publish restaurant: 'open_time' and 'close_time' must be numbers")
 
         if self.open_time >= self.close_time:
             # Logic checking
-            raise ValueError("Cannot publish restaurant: 'open_time' must be before 'close_time'")
+            # Cannot fix flaking error without breaking code
+            raise ValueError(
+                "Cannot publish restaurant: 'open_time' must be before 'close_time'")
