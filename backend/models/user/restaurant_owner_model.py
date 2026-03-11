@@ -55,3 +55,10 @@ class RestaurantOwner(User):
         if not isinstance(status, bool):
             raise ValueError ("Status must be a boolean")
         restaurant.is_open = status
+
+    def publish_restaurant(self, restaurant: Restaurant):
+        """
+        Publish restaurant
+        """
+        restaurant.validate_for_publish()
+        restaurant.is_Published = True
