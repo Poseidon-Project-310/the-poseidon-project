@@ -3,37 +3,50 @@ import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, List, Optional
 
-
 # Read by VSCode for type checking but python ignores
 if TYPE_CHECKING:
     from backend.models.restaurant.menu_item_model import MenuItem
+    from backend.models.user.restaurant_owner_model import RestaurantOwner
 
 @dataclass
 class Restaurant:
     name: str
-    owner: "RestaurantOwner"
+    owner: 'RestaurantOwner'
     # FR3: Explicitly define attributes instead of using **kwargs for better clarity and type checking
     open_time: Optional[int] = None
     close_time: Optional[int] = None
     address: Optional[str] = None
     phone: Optional[str] = None
     distance_from_user: Optional[float] = None
+    menu: List["MenuItem"] = field(default_factory=list)
 
     # Defaults
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     is_open: bool = False
     is_published: bool = False
-    menu: List["MenuItem"] = field(default_factory=list)
 
-    def publish(self):
-        self.validate_for_publish()
-        self.is_published = True
+    def get_view(self, role: str):
+        if role == "Customer" and not self.is_published:
+            return None
+        return {"name": self.name, "is_published": self.is_published}
+
+
+    def publish(self) -> bool:
+        try:
+            self.validate_for_publish()
+            self.is_published = True
+            return True
+        except ValueError:
+            return False
 
     def validate_for_publish(self):
         """
         FR3: Ensure all required fields are valid before publishing
         - Check for missing values, type check and then logic check
         """
+        if not self.menu:
+            raise ValueError("Cannot publish restaurant: menu cannot be empty")
+
         required_fields = {
             "address": self.address,
             "phone": self.phone,

@@ -2,6 +2,7 @@
 import pytest
 from unittest.mock import MagicMock
 from backend.models.user.restaurant_owner_model import RestaurantOwner
+from backend.models.restaurant.menu_item_model import MenuItem
 
 '''Fixtures to create mock data for testing'''
 
@@ -142,7 +143,8 @@ def test_owner_prepares_restaurant_for_publishing(owner, restaurant):
         address="123 Test Street",
         phone="555-555-5555",
         open_time=540,
-        close_time=1320
+        close_time=1320,
+        menu=[MenuItem(name="Burger", price=9.99)]
     )
     try:
         restaurant.validate_for_publish()

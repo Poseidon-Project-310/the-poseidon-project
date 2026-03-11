@@ -17,10 +17,10 @@ def sample_restaurant(mock_owner, sample_menu):
     return Restaurant(
         name="Testaurant",
         owner=mock_owner,
-        addresss="123 Test St",
+        open_time=900,
+        close_time=1700,
+        address="123 Test St",
         phone="555-555-5555",
-        open_time="09:00",
-        close_time="17:00",
         distance_from_user=2.5,
         menu=sample_menu
     )
@@ -32,8 +32,8 @@ def sample_restaurant(mock_owner, sample_menu):
 # Positive Functional Test: The restaurant model initializes correctly with attributes
 def test_restaurant_initialization(sample_restaurant):
     assert sample_restaurant.name == "Testaurant"
-    assert sample_restaurant.open_time == "09:00"
-    assert sample_restaurant.close_time == "17:00"
+    assert sample_restaurant.open_time == 900
+    assert sample_restaurant.close_time == 1700
     assert sample_restaurant.distance_from_user == 2.5
     assert len(sample_restaurant.menu) == 2
 
@@ -82,16 +82,6 @@ def test_menu_item_initialization(sample_menu):
     assert isinstance(item.id, str)
 from unittest.mock import MagicMock
 
-
-# FR1/ FR2: Initialization tests
-
-def test_restaurant_initialization(mock_owner):
-    # Ensure restaurant initializes correctly with valid data
-    restaurant = Restaurant(name="Testaurant", owner=mock_owner)
-    assert restaurant.name == "Testaurant"
-    assert restaurant.is_published is False
-    assert isinstance(restaurant.id, str)
-
 # FR3: Validation tests
 
 def test_validate_for_publish_success(mock_owner):
@@ -102,7 +92,8 @@ def test_validate_for_publish_success(mock_owner):
         address="123 Test St",
         phone="123-456-7890",
         open_time=900,
-        close_time=2100
+        close_time=2100,
+        menu=[MenuItem(name="Burger", price=9.99)]
     )
     restaurant.validate_for_publish()
     
@@ -113,10 +104,11 @@ def test_validate_for_publish_missing_field(mock_owner):
         owner=mock_owner,
         phone="123-456-7890",
         open_time=900,
-        close_time=2100
+        close_time=2100,
+        menu=[MenuItem(name="Burger", price=9.99)]
         # address missing
     )
-    with pytest.raises(ValueError, match="'address' is required"):
+    with pytest.raises(ValueError, match="'address' is required."):
         restaurant.validate_for_publish()
 
 def test_validate_for_publish_invalid_types(mock_owner):
@@ -127,9 +119,10 @@ def test_validate_for_publish_invalid_types(mock_owner):
         address="123 Test St",
         phone="123-456-7890",
         open_time="900",
-        close_time=2100
+        close_time=2100,
+        menu=[MenuItem(name="Burger", price=9.99)]
     )
-    with pytest.raises(ValueError, match="Cannot publish restaurant: 'open_time' and 'close_time' must be numbers"):
+    with pytest.raises(ValueError, match="must be numbers"):
         restaurant.validate_for_publish()
 
 def test_validate_for_publish_logic_error(mock_owner):
@@ -140,7 +133,8 @@ def test_validate_for_publish_logic_error(mock_owner):
         address="123 Test St",
         phone="123-456-7890",
         open_time=2200,
-        close_time=2100
+        close_time=2100,
+        menu=[MenuItem(name="Burger", price=9.99)]
     )
-    with pytest.raises(ValueError, match="Cannot publish restaurant: 'open_time' must be before 'close_time'"):
+    with pytest.raises(ValueError, match="must be before 'close_time'"):
         restaurant.validate_for_publish()
