@@ -7,21 +7,6 @@ from backend.models.user.restaurant_owner_model import RestaurantOwner
 
 
 @pytest.fixture
-def owner():
-    return RestaurantOwner(
-        id=1,
-        username="John_Doe",
-        email="john_doe@gmail.com",
-        password_hash="SecurePass123"
-    )
-
-
-@pytest.fixture
-def restaurant(owner):
-    return owner.create_restaurant("John's Diner")
-
-
-@pytest.fixture
 def menu_item():
     item = MagicMock()
     item.id = 1
@@ -137,15 +122,29 @@ def test_set_open_closed_invalid_status(owner, restaurant):
 
 # Functional Test: Updating restaurant operating hours
 def test_update_restaurant_hours(owner, restaurant):
-    owner.update_info(restaurant, open_time="09:00", close_time="21:00")
-    assert restaurant.open_time == "09:00"  # Check if open time was updated
-    assert restaurant.close_time == "21:00"  # Check if close time was updated
+    owner.update_info(restaurant, open_time=900, close_time=2100)
+    assert restaurant.open_time == 900  # Check if open time was updated
+    assert restaurant.close_time == 2100  # Check if close time was updated
 
 
 # Edge Case: Test updating only one time field
 def test_update_restaurant_hours_partial(owner, restaurant):
-    restaurant.open_time = "08:00"  # Set initial open time
-    restaurant.close_time = "20:00"  # Set initial close time
-    owner.update_info(restaurant, open_time="10:00")  # Update only open time
-    assert restaurant.open_time == "10:00"  # Check if open time was updated
-    assert restaurant.close_time == "20:00"
+    restaurant.open_time = 800  # Set initial open time
+    restaurant.close_time = 2000  # Set initial close time
+    owner.update_info(restaurant, open_time=1000)  # Update only open time
+    assert restaurant.open_time == 1000  # Check if open time was updated
+    assert restaurant.close_time == 2000
+
+def test_owner_prepares_restaurant_for_publishing(owner, restaurant):
+    # Owner fills all fields
+    owner.update_info(
+        restaurant,
+        address="123 Test Street",
+        phone="555-555-5555",
+        open_time=540,
+        close_time=1320
+    )
+    try:
+        restaurant.validate_for_publish()
+    except ValueError as e:
+        pytest.fail(f"Validation fail: {e}")

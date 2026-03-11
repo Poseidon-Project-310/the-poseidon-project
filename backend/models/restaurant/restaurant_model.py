@@ -1,33 +1,51 @@
 # backend/models/restaurant/restaurant_model.py
-
 import uuid
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, List, Optional
 
-# Typing used for type hints to avoid circular imports
-from typing import TYPE_CHECKING, List
 
 # Read by VSCode for type checking but python ignores
 if TYPE_CHECKING:
     from backend.models.user.restaurant_owner_model import RestaurantOwner
     from backend.models.restaurant.menu_item_model import MenuItem
 
+@dataclass
 class Restaurant:
-    def __init__(self, name: str, owner: "RestaurantOwner", **kwargs):
-        self.id = str(uuid.uuid4())
-        self.name = name
-        self.owner = owner
+    name: str
+    owner: "RestaurantOwner"
+    # FR3: Explicitly define attributes instead of using **kwargs for better clarity and type checking
+    open_time: Optional[int] = None
+    close_time: Optional[int] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
 
-        # Operational details
-        self.address = kwargs.get('address')
-        self.phone = kwargs.get('phone')
-        self.open_time = kwargs.get('open_time')
-        self.close_time = kwargs.get('close_time')
+    # Defaults
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    is_open: bool = False
+    is_published: bool = False
+    menu: List["MenuItem"] = field(default_factory=list)
 
-        # Set all other kwargs as attributes
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    def validate_for_publish(self):
+        """
+        FR3: Ensure all required fields are valid before publishing
+        - Check for missing values, type check and then logic check
+        """
+        required_fields = {
+            "address": self.address,
+            "phone": self.phone,
+            "open_time": self.open_time,
+            "close_time": self.close_time
+        }
 
-        # Status
-        self.is_open = False
+        for field_name, value in required_fields.items():
+            # Check for missing values
+            if value is None or (isinstance(value, str) and not value.strip()):
+                raise ValueError(f"Cannot publish restaurant: '{field_name}' is required and cannot be empty.")
+        
+        if not isinstance(self.open_time, int) or not isinstance(self.close_time, int):
+            # Type checking
+            raise ValueError("Cannot publish restaurant: 'open_time' and 'close_time' must be numbers")
 
-        # Menu
-        self.menu = []
+        if self.open_time >= self.close_time:
+            # Logic checking
+            raise ValueError("Cannot publish restaurant: 'open_time' must be before 'close_time'")
