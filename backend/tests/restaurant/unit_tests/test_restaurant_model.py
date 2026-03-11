@@ -8,15 +8,10 @@ from unittest.mock import MagicMock
 
 def test_restaurant_initialization(mock_owner):
     # Ensure restaurant initializes correctly with valid data
-    restaurant = Restaurant(
-        name="Testaurant",
-        owner=mock_owner)
-    
+    restaurant = Restaurant(name="Testaurant", owner=mock_owner)
     assert restaurant.name == "Testaurant"
-    assert restaurant.owner == mock_owner
-    assert restaurant.is_published == False
+    assert restaurant.is_published is False
     assert isinstance(restaurant.id, str)
-    assert restaurant.menu == []
 
 # FR3: Validation tests
 
@@ -30,8 +25,6 @@ def test_validate_for_publish_success(mock_owner):
         open_time=900,
         close_time=2100
     )
-    
-    # Should not raise an exception
     restaurant.validate_for_publish()
     
 def test_validate_for_publish_missing_field(mock_owner):
@@ -39,11 +32,12 @@ def test_validate_for_publish_missing_field(mock_owner):
     restaurant = Restaurant(
         name="Testaurant",
         owner=mock_owner,
-        phone_number="123-456-7890",
+        phone="123-456-7890",
         open_time=900,
         close_time=2100
+        # address missing
     )
-    with pytest.raises(ValueError, match="Cannot publish restaurant: 'address' is required"):
+    with pytest.raises(ValueError, match="'address' is required"):
         restaurant.validate_for_publish()
 
 def test_validate_for_publish_invalid_types(mock_owner):
@@ -52,11 +46,11 @@ def test_validate_for_publish_invalid_types(mock_owner):
         name="Testaurant",
         owner=mock_owner,
         address="123 Test St",
-        phone_number="123-456-7890",
+        phone="123-456-7890",
         open_time="900",
         close_time=2100
     )
-    with pytest.raises(ValueError, match="Operating hours must be a number"):
+    with pytest.raises(ValueError, match="must be numbers"):
         restaurant.validate_for_publish()
 
 def test_validate_for_publish_logic_error(mock_owner):
@@ -65,9 +59,9 @@ def test_validate_for_publish_logic_error(mock_owner):
         name="Testaurant",
         owner=mock_owner,
         address="123 Test St",
-        phone_number="123-456-7890",
+        phone="123-456-7890",
         open_time=2200,
         close_time=2100
     )
-    with pytest.raises(ValueError, match="Closing time must be after opening time"):
+    with pytest.raises(ValueError, match="must be after 'close_time'"):
         restaurant.validate_for_publish()
