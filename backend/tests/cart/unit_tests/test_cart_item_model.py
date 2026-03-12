@@ -1,3 +1,5 @@
+# python3 -m pytest backend/tests/cart/unit_tests/test_cart_item_model.py
+
 import pytest
 from unittest.mock import MagicMock
 from backend.models.cart.cart_item_model import CartItem

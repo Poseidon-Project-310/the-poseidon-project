@@ -1,3 +1,5 @@
+# python3 -m pytest backend/tests/cart/unit_tests/test_cart_model.py
+
 import pytest
 from backend.models.cart.cart_model import Cart
 
