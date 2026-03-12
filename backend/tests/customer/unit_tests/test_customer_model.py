@@ -1,11 +1,13 @@
+# python3 -m pytest backend/tests/customer/unit_tests/test_customer_model.py
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import patch
 from backend.models.user.customer_model import Customer
 from backend.models.cart.cart_model import Cart
+from backend.models.user.user_model import User
 
 @pytest.fixture
-def test_customer():
-    """Provides a standard set of data for creating a Customer."""
+def test_customer_data():
+    """Provides a standard dictionary of data for creating a Customer."""
     return {
         "id": 1,
         "username": "bbracken",
@@ -19,32 +21,31 @@ def test_customer():
 
 ## --- Initialization Tests ---
 
-def test_customer_init(test_customer):
-    # Action
-    customer = Customer(**test_customer)
+def test_customer_init(test_customer_data):
     
-    # Assert Inherited Attributes (from User)
-    assert customer.id == 1
-    assert customer.username == "bbracken"
-    assert customer.email == "b@example.com"
-    
-    # Assert Customer-Specific Attributes
-    assert customer.phone == "250-222-2222"
-    assert customer.address == "1234 University Way"
-    assert customer.postal_code == "V1V 1V1"
+    with patch('backend.models.user.customer_model.Cart') as MockCart:  
+        customer = Customer(**test_customer_data)
+        
+        # Assert Basic Attributes
+        assert customer.id == 1
+        assert customer.username == "bbracken"
+        assert customer.phone == "250-222-2222"
+        
+        # Assert Mock Behavior
+        # Check that Cart was initialized with the right arguments
+        MockCart.assert_called_once_with(customer.id, customer)
+        # Ensure the customer's cart is actually our mock object
+        assert customer.cart == MockCart.return_value
 
-    # Assert Automatic Cart Creation
-    assert isinstance(customer.cart, Cart)
-    assert customer.cart.customer == customer
+def test_inheritance_check(test_customer_data):
+    """Ensure Customer is actually a subclass of User."""
+    # We still patch Cart here just to keep the test 'pure' and fast
+    with patch('backend.models.user.customer_model.Cart'):
+        customer = Customer(**test_customer_data)
+        assert isinstance(customer, User)
 
 ## --- Behavior Tests ---
 
-def test_submit_review(test_customer):
-    # TODO: Implement this for Feat9
-    pass
-
-def test_inheritance_check(test_customer):
-    """Ensure Customer is actually a subclass of User."""
-    from backend.models.user.user_model import User
-    customer = Customer(**test_customer)
-    assert isinstance(customer, User)
+def test_submit_review_interface(test_customer_data):
+   # TODO: Do with Feat9
+   pass

@@ -1,8 +1,7 @@
 # Customer Model class
 
 from backend.models.user.user_model import User
-from backend.models.restaurant.menu_item_model import MenuItem
-from backend.models.cart import Cart
+from backend.models.cart.cart_model import Cart
 
 class Customer(User):
     # Inherit info from user
