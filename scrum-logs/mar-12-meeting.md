@@ -11,10 +11,10 @@
 ## Meeting Notes
 
 ### Team
-- Weekly meeting moved to Wednesday 6:00 PM instead of Thursday since M3 is due Thursdays
-- Lab attendance next week is important for reviewing progress
+- Weekly meeting moved to Wednesday 6:00 PM only next week instead of Thursday since M3 is due Thursday.
+- Lab attendance next week is important for reviewing progress.
 - The backend needs to be dockerized before submission
-- Everyone will add their own Docker setup, but one person needs to create the framework
+- Everyone will add their own Docker setup, but one person needs to create the framework 
 - Anjana will set up the Docker framework on Monday
 - PRs should not stay open longer than one week
 - Old PRs must be updated to the format [F# - FR#] or closed
