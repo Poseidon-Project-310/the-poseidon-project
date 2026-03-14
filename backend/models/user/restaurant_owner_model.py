@@ -15,7 +15,8 @@ class RestaurantOwner(User):
     def create_restaurant(self, name, **kwargs):
         if not name or name.strip() == "":
             raise ValueError("Restaurant name cannot be empty")
-        return Restaurant(name=name, owner=self, **kwargs)
+        res_id = kwargs.pop('id', 0) 
+        return Restaurant(id=res_id, name=name, owner=self, **kwargs)
 
     def update_info(self, restaurant, **kwargs):
         for key, value in kwargs.items():
@@ -28,7 +29,8 @@ class RestaurantOwner(User):
 
     # removes a menu item from the restaurant's menu
     def remove_menu_item(self, restaurant, item):
-        restaurant.menu = [i for i in restaurant.menu if i.id != item.id]
+        if item in restaurant.menu:
+            restaurant.menu.remove(item)
 
     # updates a menu item in the restaurant's menu
     def update_menu_item(self, item, **kwargs):
