@@ -18,7 +18,7 @@ class RestaurantService:
         # Check if user is an admin or owner
         if user_type not in ["RestaurantOwner", "Admin"]:
             return {"success": False, "error": "unauthorized"}
-        
+
         try:
             new_restaurant = Restaurant(
                 name=data.get("name"),
@@ -26,15 +26,14 @@ class RestaurantService:
                 open_time=data.get("open_time", 900),
                 close_time=data.get("close_time", 2100),
                 menu=[]
-
             )
             new_id = self.restaurant_repository.create_restaurant(new_restaurant)
             return {"success": True, "restaurant_id": new_id}
-        
+
         # Handle potential errors
         except Exception as e:
             return {"success": False, "error": str(e)}
-        
+
     def publish_restaurant(self, restaurant_id):
         """
         Feat2-FR3: Correct and accurate information
@@ -56,7 +55,6 @@ class RestaurantService:
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}
-
 
     def get_nearby_restaurants(self, customer, radius_km=10.0):
         """

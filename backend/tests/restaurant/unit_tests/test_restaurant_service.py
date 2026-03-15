@@ -166,7 +166,7 @@ def test_get_nearby_restaurants_ignores_unpublished(restaurant_service):
 
     # Close but unpublished
     res_hidden = {"id": 1, "name": "Ghost Kitchen", "latitude": 0.001, "longitude": 0.001, "is_published": False}
-    
+
     restaurant_service.restaurant_repository.restaurants = {1: res_hidden}
 
     results = restaurant_service.get_nearby_restaurants(customer, radius_km=10.0)
@@ -189,12 +189,12 @@ def test_get_nearby_restaurants_at_zero_coordinates(restaurant_service):
     """
     customer = Customer(id=1, username="c", email="c@test.com", password_hash="h", 
                         latitude=0.0, longitude=0.0)
-    
+
     res = {"id": 1, "name": "Equator Eats", "latitude": 0.0, "longitude": 0.0, "is_published": True}
     restaurant_service.restaurant_repository.restaurants = {1: res}
 
     results = restaurant_service.get_nearby_restaurants(customer, radius_km=10.0)
-    
+
     assert len(results) == 1
     assert results[0]["distance_from_user"] == 0.0
 
@@ -205,16 +205,16 @@ def test_get_nearby_restaurants_extreme_radius(restaurant_service):
     """
     customer = Customer(id=1, username="c", email="c@test.com", password_hash="h", 
                         latitude=0.0, longitude=0.0)
-    
+
     # One in London, one in Tokyo
     res1 = {"id": 1, "name": "London Pub", "latitude": 51.5, "longitude": -0.1, "is_published": True}
     res2 = {"id": 2, "name": "Tokyo Sushi", "latitude": 35.6, "longitude": 139.6, "is_published": True}
-    
+
     restaurant_service.restaurant_repository.restaurants = {1: res1, 2: res2}
 
     # Radius of 20,000km
     results = restaurant_service.get_nearby_restaurants(customer, radius_km=20000.0)
-    
+
     assert len(results) == 2
 
 def test_get_nearby_restaurants_zero_radius(restaurant_service):
@@ -225,13 +225,13 @@ def test_get_nearby_restaurants_zero_radius(restaurant_service):
     """
     customer = Customer(id=1, username="c", email="c@test.com", password_hash="h", 
                         latitude=10.0, longitude=10.0)
-    
+
     res_exact = {"id": 1, "name": "Same Spot", "latitude": 10.0, "longitude": 10.0, "is_published": True}
     res_near = {"id": 2, "name": "Near Spot", "latitude": 10.0001, "longitude": 10.0001, "is_published": True}
-    
+
     restaurant_service.restaurant_repository.restaurants = {1: res_exact, 2: res_near}
 
     results = restaurant_service.get_nearby_restaurants(customer, radius_km=0.0)
-    
+
     assert len(results) == 1
     assert results[0]["id"] == 1
