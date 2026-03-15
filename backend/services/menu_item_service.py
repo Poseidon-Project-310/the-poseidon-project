@@ -15,6 +15,11 @@ class MenuService:
     def __init__(self, repository):
         self.repository = repository
 
+    def update_item_availability(self, restaurant_id: int,
+                                 item_id: int, status: bool):
+        # Check if restaurant exists
+        restaurant = self.repository.get_restaurant_by_id(restaurant_id)
+
     def add_menu_item(
             self, owner_id: int, restaurant_id: str, item_data: dict):
         # Fear2-FR4: Add new item
