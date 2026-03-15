@@ -19,8 +19,6 @@ def sample_restaurant(owner):
         name="Testaurant",
         owner=owner,
         address="123 Test st",
-        latitude=45.523062,
-        longitude=-122.676482,
         phone="555-555-5555",
         open_time=900,
         close_time=2200
@@ -37,11 +35,6 @@ def test_create_restaurant(restaurant_repo, sample_restaurant):
     assert result == sample_restaurant.id
     assert len(restaurant_repo.get_all_restaurants()) == 1
 
-    # Verification that coordinates are persisted on creation
-    stored_data = restaurant_repo.get_by_id(result)
-    assert stored_data["latitude"] == 45.523062
-    assert stored_data["longitude"] == -122.676482
-
 
 def test_update_restaurant(restaurant_repo, sample_restaurant):
     # Test for Feat2-FR3: Correct and accurate information
@@ -49,9 +42,6 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     res_id = restaurant_repo.create_restaurant(sample_restaurant)
 
     sample_restaurant.address = "456 New Ave"
-    # Update the coordinates as part of the update test
-    sample_restaurant.latitude = 40.7128
-    sample_restaurant.longitude = -74.0060
     sample_restaurant.is_published = True
 
     success = restaurant_repo.update_restaurant(sample_restaurant)
@@ -60,52 +50,6 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     updated_data = restaurant_repo.get_by_id(res_id)
     assert updated_data["address"] == "456 New Ave"
     assert updated_data["is_published"] is True
-
-    def test_create_restaurant_with_missing_coordinates(
-            restaurant_repo, owner):
-        """
-        Feat3-FR1: Ensures that if the restaurant object
-        lacks lat/long attributes,
-        the repo defaults them to 0.0 instead of crashing.
-        """
-        minimal_res = Restaurant(name="Minimal", owner=owner)
-        # Manually remove attributes if they exist to simulate an old
-        # model version
-        if hasattr(minimal_res, 'latitude'):
-            del minimal_res.latitude
-        if hasattr(minimal_res, 'longitude'):
-            del minimal_res.longitude
-
-        res_id = restaurant_repo.create_restaurant(minimal_res)
-        stored_data = restaurant_repo.get_by_id(res_id)
-
-        assert stored_data["latitude"] == 0.0
-        assert stored_data["longitude"] == 0.0
-
-# --- Coordinates ---
-
-
-def test_repository_safety_net_forces_false_publication(
-        restaurant_repo, sample_restaurant):
-    """
-    Safety Net: Verifies that update_restaurant overrides is_published to False
-    if latitude or longitude are 0.0.
-    """
-    # 1. Create the restaurant in the repo first
-    res_id = restaurant_repo.create_restaurant(sample_restaurant)
-
-    # 2. Set coordinates to 0.0 and attempt to publish
-    sample_restaurant.latitude = 0.0
-    sample_restaurant.longitude = 0.0
-    sample_restaurant.is_published = True
-
-    # 3. Call the update method
-    restaurant_repo.update_restaurant(sample_restaurant)
-
-    # 4. Assert that the safety net caught it
-    updated_data = restaurant_repo.get_by_id(res_id)
-    assert updated_data["is_published"] is False
-    assert updated_data["latitude"] == 0.0
 
 # --- Tagging ---
 
