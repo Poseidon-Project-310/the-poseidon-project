@@ -46,26 +46,28 @@ class RestaurantRepository:
         self.db.append(restaurant_data)
         return restaurant.id
 
-    def update_restaurant(self, restaurant_id: int, item_id: str, updated_item: MenuItem) -> bool:
+    def update_restaurant(self, restaurant : Restaurant) -> bool:
         """
         Feat2-FR3 (Correct and accurate information)
         Modify existing restaurant info
         """
         # Find existing restaurant by restaurant_id
         # Update fields and save changes to data store
-        res_dict = self.get_by_id(restaurant_id)
-        if res and "menu" in res:
-            for item in res["menu"]:
-                if item["id"] == item_id:
-                    # Map the object attributes to the dictionary
-                    changes = {
-                        "name": updated_item.name,
-                        "price": updated_item.price,
-                        "tags": updated_item.tags
-                    }
-                    # Only updates the keys provided in 'changes'
-                    item.update(changes)
-                    return True
+        res_dict = self.get_by_id(restaurant.id)
+        if res_dict:
+            # We create a map of only the fields we want to sync
+            changes = {
+                "name": restaurant.name,
+                "address": restaurant.address,
+                "phone": restaurant.phone,
+                "open_time": restaurant.open_time,
+                "close_time": restaurant.close_time,
+                "is_published": restaurant.is_published
+            }
+            # .update() merges these changes into the existing dict
+            # Any key NOT in the 'changes' dict remains exactly as it was.
+            res_dict.update(changes)
+            return True
         return False
 
     def add_menu_item(self, restaurant_id: int, menu_item: MenuItem) -> bool:
@@ -120,14 +122,12 @@ class RestaurantRepository:
         """
         res = self.get_by_id(restaurant_id)
         if res and "menu" in res:
-            for i, item in res["menu"]:
+            for item in res["menu"]:
                 if item["id"] == item_id:
                     # Update the stored dictionary with new object data
-                    item.update({
-                        "name": updated_item.name,
-                        "price": updated_item.price,
-                        "tags": updated_item.tags
-                    })
+                    item["name"] = updated_item.name
+                    item["price"] = updated_item.price
+                    item["tags"] = updated_item.tags
                     return True
         return False
 
