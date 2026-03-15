@@ -1,6 +1,7 @@
 from backend.models.user.user_model import User
 from dataclasses import dataclass
 
+
 @dataclass
 class Customer(User):
     address: str = ""
