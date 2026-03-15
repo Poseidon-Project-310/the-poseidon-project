@@ -103,3 +103,14 @@ def test_unauthorized_owner_access(menu_service, mock_repo):
         menu_service.update_item_availability(
             2, "res_123", "item_001", False)
     assert "Access denied" in str(exc.value)
+
+def test_update_availability_wrong_restaurant(menu_service, mock_repo):
+    # Edge case: Item belongs but is in a different restaurant
+    mock_repo.get_restaurant_by_id.return_value = MagicMock(id=10)
+    mock_item = MagicMock(id=1, restaurant_id=20)
+    mock_repo.get_menu_item_by_id.return_value = mock_item
+
+    with pytest.raises(EntityNotFoundError) as exc:
+        menu_service.update_item_availability(10, 1, False)
+
+    assert "does not belong to Restaurant 10" in str(exc.value)

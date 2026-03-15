@@ -67,13 +67,30 @@ class MenuService:
             raise PermissionError(
                 "Access denied: You do not own this restaurant.")
         return restaurant
-
-    def update_item_availability(self, owner_id: int, restaurant_id: str,
+ 
+    def update_item_availability(self, restaurant_id: int,
                                  item_id: int, status: bool):
-        self.get_and_verify_owner(restaurant_id, owner_id)
-        success = self.repository.update_menu_item_availability(
-            restaurant_id, item_id, status)
-        if not success:
+        # Check if restaurant exists
+        restaurant = self.repository.get_restaurant_by_id(restaurant_id)
+        if not restaurant:
             raise EntityNotFoundError(
-                f"Menu Item with ID {item_id} not found.")
-        return True
+                f"Update failed: Restaurant with ID {
+                    restaurant_id} not found.")
+
+        # Check if menu item exists
+        menu_item = self.repository.get_menu_item_by_id(item_id)
+        if not menu_item:
+            raise EntityNotFoundError(
+                f"Update failed: Menu Item with ID {item_id} not found.")
+
+        # Checks if menu item is in restaurant
+        if menu_item.restaurant_id != restaurant_id:
+            raise EntityNotFoundError(
+                f"Item {item_id} does not belong to Restaurant {
+                    restaurant_id}.")
+
+        # Update
+        menu_item.availability = status
+        self.repository.save(menu_item)
+
+        return menu_item
