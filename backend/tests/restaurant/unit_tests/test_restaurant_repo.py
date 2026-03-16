@@ -16,6 +16,13 @@ def restaurant_repo():
 
 
 @pytest.fixture
+def owner():
+    class MockOwner:
+        id = 1
+    return MockOwner()
+
+
+@pytest.fixture
 def sample_restaurant(owner):
     return Restaurant(
         name="Testaurant",
@@ -52,6 +59,67 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     updated_data = restaurant_repo.get_by_id(res_id)
     assert updated_data["address"] == "456 New Ave"
     assert updated_data["is_published"] is True
+
+# --- Ratings and Reviews  ---
+
+def test_update_restaurant_rating_persistence(restaurant_repo, sample_restaurant):
+    """
+    Feat3-FR3: Ratings update when new reviews are added.
+    Functional Test: Verifies that the repo correctly stores
+    the recalculated rating.
+    """
+    res_id = restaurant_repo.create_restaurant(sample_restaurant)
+    
+    # Simulate a calculation performed in the Service layer
+    new_avg = 4.5
+    new_total = 10
+    
+    success = restaurant_repo.update_restaurant_rating(res_id, new_avg, new_total)
+    
+    assert success is True
+    updated_data = restaurant_repo.get_by_id(res_id)
+    assert updated_data["average_rating"] == 4.5
+    assert updated_data["total_reviews"] == 10
+
+
+def test_add_review_to_restaurant_persistence(restaurant_repo, sample_restaurant):
+    """
+    Feat3-FR3: Customer reviews are visible to users.
+    Functional Test: Verifies that a review dictionary
+    is correctly appended to the restaurant.
+    """
+    res_id = restaurant_repo.create_restaurant(sample_restaurant)
+    review_data = {
+        "rating": 5,
+        "comment": "Delicious!",
+        "customer_name": "Grayson",
+        "customer_id": 101
+    }
+    
+    success = restaurant_repo.add_review_to_restaurant(res_id, review_data)
+    
+    assert success is True
+    stored_res = restaurant_repo.get_by_id(res_id)
+    assert len(stored_res["reviews"]) == 1
+    assert stored_res["reviews"][0]["customer_name"] == "Grayson"
+    assert stored_res["reviews"][0]["rating"] == 5
+
+def test_update_rating_nonexistent_restaurant(restaurant_repo):
+    """
+    Feat3-FR3: Update rating of a nonexistent restuarant.
+    Edge Case: Ensure updating a rating for a missing ID fails
+    """
+    success = restaurant_repo.update_restaurant_rating(999, 5.0, 1)
+    assert success is False
+
+
+def test_add_review_nonexistent_restaurant(restaurant_repo):
+    """
+    Feat3-FR3: Add review to nonexistent restaurant
+    Edge Case: Ensure adding a review to a missing ID fails
+    """
+    success = restaurant_repo.add_review_to_restaurant(999, {"rating": 5})
+    assert success is False
 
 # --- Tagging ---
 
@@ -110,7 +178,6 @@ def test_update_menu_item_preserves_extra_fields(
     restaurant_repo.add_menu_item(res_id, sample_item)
 
     # Simulate a field we didn't account for in the model
-    # (e.g., from a future DB migration)
     stored_res = restaurant_repo.get_by_id(res_id)
     stored_res["menu"][0]["calories"] = 500
     item_id = stored_res["menu"][0]["id"]

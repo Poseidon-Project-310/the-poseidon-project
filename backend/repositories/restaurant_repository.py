@@ -33,6 +33,9 @@ class RestaurantRepository:
             "open_time": restaurant.open_time,
             "close_time": restaurant.close_time,
             "is_published": restaurant.is_published,
+            "average_rating": 0.0,
+            "total_reviews": 0,
+            "reviews": [],
             "menu": [{
                 "id": item.id,
                 "name": item.name,
@@ -67,6 +70,34 @@ class RestaurantRepository:
             # .update() merges these changes into the existing dict
             # Any key NOT in the 'changes' dict remains exactly as it was.
             res_dict.update(changes)
+            return True
+        return False
+    
+    def update_restaurant_rating(self, restaurant_id: int, new_avg: float, new_total: int) -> bool:
+        """
+        Feat3-FR3:
+        Updates the cached rating stats so Home/Search pages stay fast.
+        """
+        res_dict = self.get_by_id(restaurant_id)
+        if res_dict:
+            res_dict["average_rating"] = new_avg
+            res_dict["total_reviews"] = new_total
+            return True
+        return False
+
+
+    def add_review_to_restaurant(self, restaurant_id: int, review_data: Dict) -> bool:
+        """
+        Feat3-FR3:
+        Makes customers reviews visible
+        Appends a review dictionary to the restaurant's
+        internal review list.
+        """
+        res_dict = self.get_by_id(restaurant_id)
+        if res_dict:
+            if "reviews" not in res_dict:
+                res_dict["reviews"] = []
+            res_dict["reviews"].append(review_data)
             return True
         return False
 
