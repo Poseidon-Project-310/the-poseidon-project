@@ -75,10 +75,30 @@ class RestaurantRepository:
         Feat3-FR2 (Searching for restaurants/items)
         Search for restaurants and menu items matching query
         """
-        # Remove special characters from query
-        # Perform keyword search in restaurant names and menu item names
-        # Return list of matching restaurants and menu items
-        pass
+        if not query or not query.strip():
+            return []
+
+        # Normalize query: lowercase and remove extra whitespace
+        search_term = query.lower().strip()
+        results = []
+
+        for restaurant in self.db:
+            name_match = search_term in restaurant.get('name', '').lower()
+
+            menu_match = False
+            menu_items = restaurant.get('menu', [])
+            for item in menu_items:
+                # Handle both object-based menu items and dict-based ones
+                item_name = item.name if hasattr(item, 'name') else item.get('name', '')
+                if search_term in item_name.lower():
+                    menu_match = True
+                    break # Stop looking at this restaurant's menu if we found a match
+
+            # If either the restaurant name or any menu item matches, include it
+            if name_match or menu_match:
+                results.append(restaurant)
+
+        return results
 
     def filter_results(self, cuisine: Optional[str] = None, min_rating: Optional[float] = None) -> List[Dict]:
         """
