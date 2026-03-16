@@ -6,5 +6,5 @@ from typing import List, Optional
 class MenuItem:
     name:str
     price: float
+    id: Optional[int] = None
     tags: List[str] = field(default_factory=list)
-    id: Optional[int] = 0
