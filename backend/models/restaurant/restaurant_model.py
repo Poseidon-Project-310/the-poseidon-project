@@ -7,30 +7,51 @@ from typing import TYPE_CHECKING, List, Optional
 if TYPE_CHECKING:
     from backend.models.restaurant.menu_item_model import MenuItem
     from backend.models.user.restaurant_owner_model import RestaurantOwner
+    from backend.models.review.review_model import Review
 
 
 @dataclass
 class Restaurant:
     name: str
     owner: 'RestaurantOwner'
-    # FR3: Explicitly define attributes instead of using **kwargs
-    # for better clarity and type checking
     open_time: Optional[int] = None
     close_time: Optional[int] = None
     address: Optional[str] = None
     phone: Optional[str] = None
     distance_from_user: Optional[float] = None
     menu: List["MenuItem"] = field(default_factory=list)
+    reviews: List["Review"] = field(default_factory=list)
+    average_rating: float = 0.0
 
     # Defaults
-    id: Optional[int] = None
+    id: int = None
     is_open: bool = False
     is_published: bool = False
 
     def get_view(self, role: str):
         if role == "Customer" and not self.is_published:
             return None
-        return {"name": self.name, "is_published": self.is_published}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "average_rating": self.average_rating,
+            "menu": [vars(item) for item in self.menu],
+            "reviews": [vars(rev) for rev in self.reviews],
+            "is_published": self.is_published
+        }
+
+
+    def update_average_rating(self):
+        """
+        Feat3-FR3: Functional logic for average logic to update when
+        new ratings are added
+        """
+        if not self.reviews:
+            self.average_rating = 0.0
+            return
+        
+        total = sum(review.rating for review in self.reviews)
+        self.average_rating = round(total / len(self.reviews), 1)
 
     def validate_for_publish(self):
         """
