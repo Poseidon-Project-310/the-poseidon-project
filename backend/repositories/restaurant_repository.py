@@ -95,8 +95,9 @@ class RestaurantRepository:
             if "menu" not in res_dict:
                 res_dict["menu"] = []
 
+            if "menu" not in res_dict:
+                res_dict["menu"] = []
             res_dict["menu"].append(item_data)
-            res_dict.setdefault("menu", []).append(item_data)
             return True
         return False
 

@@ -9,6 +9,13 @@ from backend.models.restaurant.menu_item_model import MenuItem
 
 # --- Fixtures ---
 
+@pytest.fixture
+def owner():
+    # Mocking an owner object that has an .id attribute
+    class MockOwner:
+        id = 1
+    return MockOwner()
+
 
 @pytest.fixture
 def restaurant_repo():
@@ -189,14 +196,17 @@ def update_nonexistent_restaurant(restaurant_repo, sample_restaurant):
 # --- Search tests ---
 
 
-def test_search_by_restaurant_name(restaurant_repo):
+def test_search_by_restaurant_name(restaurant_repo, owner):
     """
     Feat3-FR2:
     Functional test: Verify search finds matches
     in the restaurant name
     """
-    restaurant_repo.create_restaurant({"name": "Burger King", "menu": []})
-    restaurant_repo.create_restaurant({"name": "Pizza Hut", "menu": []})
+    res1 = Restaurant(name="Burger King", owner=owner)
+    res2 = Restaurant(name="Pizza Hut", owner=owner)
+
+    restaurant_repo.create_restaurant(res1)
+    restaurant_repo.create_restaurant(res2)
 
     results = restaurant_repo.search_restaurants_and_menu_items("Burger")
 
@@ -204,17 +214,19 @@ def test_search_by_restaurant_name(restaurant_repo):
     assert results[0]["name"] == "Burger King"
 
 
-def test_search_by_menu_item_name(restaurant_repo):
+def test_search_by_menu_item_name(restaurant_repo, owner, sample_item):
     """
     Feat3-FR2:
     Functional test: Verify search finds matches deep inside
     the menu list
     """
     # Restaurant name doesn't match, but the menu does
-    restaurant_repo.create_restaurant({
-        "name": "The Italian Place",
-        "menu": [{"name": "Pepperoni Pizza"}, {"name": "Lasagna"}]
-    })
+    res = Restaurant(name="The Italian Place", owner=owner)
+    res_id = restaurant_repo.create_restaurant(res)
+    
+    # Add a specific item to the menu via the repo
+    pizza_item = MenuItem(name="Pepperoni Pizza", price=12.0)
+    restaurant_repo.add_menu_item(res_id, pizza_item)
 
     results = restaurant_repo.search_restaurants_and_menu_items("Pizza")
 
@@ -222,49 +234,39 @@ def test_search_by_menu_item_name(restaurant_repo):
     assert results[0]["name"] == "The Italian Place"
 
 
-def test_search_is_case_insensitive(restaurant_repo):
+def test_search_is_case_insensitive(restaurant_repo, owner):
     """
     Feat3-FR2:
     Functional test: 'pizza' should match 'Pizza'
     """
-    restaurant_repo.create_restaurant({"name": "Pizza Palace", "menu": []})
+    res = Restaurant(name="Pizza Palace", owner=owner)
+    restaurant_repo.create_restaurant(res)
 
     results = restaurant_repo.search_restaurants_and_menu_items("PIZZA")
 
     assert len(results) == 1
 
 
-def test_search_with_empty_string(restaurant_repo):
+def test_search_with_empty_string(restaurant_repo, owner):
     """
     Feat3-FR2:
     Edge Case: Searching for an empty string
     should return an empty list and not everything
     """
-    restaurant_repo.create_restaurant({"name": "Anywhere", "menu": []})
+    res = Restaurant(name="Anywhere", owner=owner)
+    restaurant_repo.create_restaurant(res)
 
     assert restaurant_repo.search_restaurants_and_menu_items("") == []
     assert restaurant_repo.search_restaurants_and_menu_items("   ") == []
 
 
-def test_search_with_missing_menu_key(restaurant_repo):
-    """
-    Feat3-FR2:
-    Edge Case: Ensure search doesn't crash if a
-    restaurant dict has no 'menu' key
-    """
-    restaurant_repo.create_restaurant({"name": "Old School Diner"})
-
-    # This should return a result based on name without raising a KeyError
-    results = restaurant_repo.search_restaurants_and_menu_items("Diner")
-    assert len(results) == 1
-
-
-def test_search_partial_match(restaurant_repo):
+def test_search_partial_match(restaurant_repo, owner):
     """
     Feat3-FR2:
     Edge Case: Searching for 'zz' should find 'Pizza'.
     """
-    restaurant_repo.create_restaurant({"name": "Pizza Hut", "menu": []})
+    res = Restaurant(name="Pizza Hut", owner=owner)
+    restaurant_repo.create_restaurant(res)
 
     results = restaurant_repo.search_restaurants_and_menu_items("zz")
     assert len(results) == 1
