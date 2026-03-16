@@ -1,21 +1,53 @@
 # Customer Model class
 
+from dataclasses import dataclass
 from backend.models.user.user_model import User
-from backend.models.cart.cart_model import Cart
 
+class Cart:
+    # Placeholder Cart class
+    def __init__(self, customer_id: int, customer: "Customer"):
+        self.customer_id = customer_id
+        self.customer = customer
+        self.items = []
+
+@dataclass
 class Customer(User):
-    # Inherit info from user
-    def __init__(self, id: int, username: str, email: str, password_hash: str, 
-                 phone: str, address: str, city: str, postal_code: str):
-        
-        # Send the common attributes to the User constructor
-        super().__init__(id, username, email, password_hash)        
-        
-        self.phone = phone
-        self.address = address
-        self.city = city
-        self.postal_code = postal_code
-        self.cart = Cart(id, self)
+    phone: str
+    address: str
+    city: str
+    postal_code: str
+
+    """
+    Customer Model (based on UML diagram)
+
+    UML Attributes:
+      - phone: String
+      - address: String
+      - city: String
+      - postal_code: String
+
+    UML Methods:
+      - submit_review(order: Order, rating: int, comment: String) -> Review
+
+    Additional Attributes:
+      - cart: Cart (initialized in __post_init__)
+    """
+
+    def __post_init__(self) -> None:
+        """
+        This runs right after the dataclass constructor, which means it runs after we create a Customer object.
+        We use it to validate that the Customer object is not invalid.
+        """
+        super().__post_init__()
+        if not isinstance(self.phone, str) or not self.phone.strip():
+            raise ValueError("phone must be a non-empty string")
+        if not isinstance(self.address, str) or not self.address.strip():
+            raise ValueError("address must be a non-empty string")
+        if not isinstance(self.city, str) or not self.city.strip():
+            raise ValueError("city must be a non-empty string")
+        if not isinstance(self.postal_code, str) or not self.postal_code.strip():
+            raise ValueError("postal_code must be a non-empty string")
+        self.cart = Cart(self.id, self)
         
 
     def submit_review(self, order: "Order", rating: int, comment: str) -> "Review":
