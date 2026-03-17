@@ -1,6 +1,7 @@
 # backend/tests/restaurant/unit_tests/test_menu_item_model.py
 import pytest
-from unittest.mock import MagicMock, ANY
+import math
+from unittest.mock import MagicMock
 from backend.models.user.customer import Customer
 from backend.services.restaurant_service import RestaurantService
 from backend.models.restaurant.restaurant_model import Restaurant
@@ -8,35 +9,43 @@ from backend.models.user.restaurant_owner_model import RestaurantOwner
 
 @pytest.fixture
 def mock_repo():
-    return MagicMock()
+    repo = MagicMock()
+    repo.restaurants = {}
+    return repo
 
 @pytest.fixture
 def service(mock_repo):
     return RestaurantService(mock_repo)
 
 @pytest.fixture
-def restaurant_owner():
+def owner():
     return RestaurantOwner(
         id=1, 
         username="John Doe", 
         password_hash="hashed_password", 
-        email="fakeemail@mail.ca",
+        email="fakeemail@mail.ca"
     )
 
 @pytest.fixture
 def customer():
-    return Customer(id=2, username="Newbie", password_hash="hashed_pw", email="customer@mail.com")
-    
-    def get_all_restaurants(self):
-        # Expects a list of dictionaries
-        return [res.to_dict() if hasattr(res, 'to_dict'
-                                         ) else res for res in self.restaurants.values()]
+    return Customer(
+        id=2, 
+        username="Newbie",
+        password_hash="hashed_pw",
+        email="customer@mail.com")
 
+
+@pytest.fixture
+def restaurant(owner):
+    # Created a missing fixture to make tests runnable
+    res = Restaurant(id=1, name="John's Diner", owner=owner)
+    res.is_published = False
+    return res
 
 # --- FR3: Publishing logic ---
 
 
-def test_publish_restaurant_success(restaurant_service, restaurant):
+def test_publish_restaurant_success(service, mock_repo, restaurant):
     # Positive Functional test: Publish when all required fields are filled
     # Complete partial conftest
     restaurant.address = "123 Test Ave"
@@ -54,6 +63,7 @@ def test_publish_restaurant_success(restaurant_service, restaurant):
 
 def test_publish_restaurant_fails_missing_info(service, mock_repo, restaurant):
     # Edge test: Throw error if incomplete
+    restaurant.menu = ["Mock Item"]
     mock_repo.get_by_id.return_value = restaurant
     result = service.publish_restaurant(restaurant.id)
 
@@ -100,30 +110,25 @@ def test_admin_customer_perspective(service, mock_repo, restaurant):
 
 # --- F2FR1: Registration and roles---
 
-def test_create_restaurant_as_owner(restaurant_service, owner):
+def test_create_restaurant_as_owner(service, owner):
     # Positive functionality test: Owner can create a restaurant
     data = {"name": "New Spot", "location": "789 Road"}
-    result = restaurant_service.register_restaurant(owner, data)
+    service.restaurant_repository.save.return_value = 123
+    result = service.register_restaurant(owner, data)
 
     assert result["success"] is True
-    assert result["restaurant_id"] == "mock_id_123"
+    assert result["restaurant_id"] == 123
 
-def test_create_restaurant_as_customer(restaurant_service):
+def test_create_restaurant_as_customer(service, customer):
     # Edge case: A customer should not be able to create a restaurant
-    customer = Customer(
-        id=2,
-        username="Newbie",
-        email="newbie@example.com",
-        password_hash="hashed_pw"
-    )
     data = {"name": "Fake place", "location": "None"}
 
-    result = restaurant_service.register_restaurant(customer, data)
+    result = service.register_restaurant(customer, data)
 
     assert result["success"] == False
     assert "unauthorized" in result["error"]
 
-def test_service_publish_flow_success(restaurant_service, restaurant):
+def test_service_publish_flow_success(service, mock_repo, restaurant):
     # Positive Functional Test: Tests that user can store before publishing
     restaurant.address = "123 Test Ave"
     restaurant.phone = "555-555-5555"
@@ -144,7 +149,7 @@ def test_service_publish_flow_success(restaurant_service, restaurant):
 
 # --- F3FR1 Nearby search logic ---
 
-def test_get_nearby_restaurants_filtering_and_sorting(restaurant_service):
+def test_get_nearby_restaurants_filtering_and_sorting(service):
     """
     Feat3-FR1:
     Functional test: Test that restaurants are filtered
@@ -161,17 +166,17 @@ def test_get_nearby_restaurants_filtering_and_sorting(restaurant_service):
     # Restaurant C: Outside 20km radius
     res_c = {"id": 3, "name": "Out of Bounds", "latitude": 1.0, "longitude": 1.0, "is_published": True}
 
-    restaurant_service.restaurant_repository.restaurants = {1: res_a, 2: res_b, 3: res_c}
+    service.restaurant_repository.restaurants = {1: res_a, 2: res_b, 3: res_c}
 
     # Execution (Radius 20km)
-    results = restaurant_service.get_nearby_restaurants(customer, radius_km=20.0)
+    results = service.get_nearby_restaurants(customer, radius_km=20.0)
 
     assert len(results) == 2  # Only A and B
     assert results[0]["name"] == "Close Cafe"  # Sorting check (closest first)
     assert results[1]["name"] == "Far Food"
     assert "distance_from_user" in results[0]
 
-def test_get_nearby_restaurants_ignores_unpublished(restaurant_service):
+def test_get_nearby_restaurants_ignores_unpublished(service):
     """
     Feat3-FR1:
     Negative functional test: Test that even if a
@@ -183,22 +188,22 @@ def test_get_nearby_restaurants_ignores_unpublished(restaurant_service):
     # Close but unpublished
     res_hidden = {"id": 1, "name": "Ghost Kitchen", "latitude": 0.001, "longitude": 0.001, "is_published": False}
 
-    restaurant_service.restaurant_repository.restaurants = {1: res_hidden}
+    service.restaurant_repository.restaurants = {1: res_hidden}
 
-    results = restaurant_service.get_nearby_restaurants(customer, radius_km=10.0)
+    results = service.get_nearby_restaurants(customer, radius_km=10.0)
 
     assert len(results) == 0
 
-def test_calculate_haversine_accuracy(restaurant_service):
+def test_calculate_haversine_accuracy(service):
     """
     Feat3-FR1:
     Positive Functional: Test the math helper directly with known distances.
     Distance between Kelowna and Vancouver is ~270km
     """
-    dist = restaurant_service.calculate_haversine(49.88, -119.49, 49.28, -123.12)
+    dist = service.calculate_haversine(49.88, -119.49, 49.28, -123.12)
     assert 265 <= dist <= 275  # Allow small margin for earth curvature models
 
-def test_get_nearby_restaurants_at_zero_coordinates(restaurant_service):
+def test_get_nearby_restaurants_at_zero_coordinates(service):
     """
     Feat3-FR1:
     Edge Case: Customer and Restaurant are both at (0,0)
@@ -207,14 +212,14 @@ def test_get_nearby_restaurants_at_zero_coordinates(restaurant_service):
                         latitude=0.0, longitude=0.0)
 
     res = {"id": 1, "name": "Equator Eats", "latitude": 0.0, "longitude": 0.0, "is_published": True}
-    restaurant_service.restaurant_repository.restaurants = {1: res}
+    service.restaurant_repository.restaurants = {1: res}
 
-    results = restaurant_service.get_nearby_restaurants(customer, radius_km=10.0)
+    results = service.get_nearby_restaurants(customer, radius_km=10.0)
 
     assert len(results) == 1
     assert results[0]["distance_from_user"] == 0.0
 
-def test_get_nearby_restaurants_extreme_radius(restaurant_service):
+def test_get_nearby_restaurants_extreme_radius(service):
     """
     Feat3-FR1:
     Edge Case: Huge radius should include all published restaurants
@@ -226,14 +231,14 @@ def test_get_nearby_restaurants_extreme_radius(restaurant_service):
     res1 = {"id": 1, "name": "London Pub", "latitude": 51.5, "longitude": -0.1, "is_published": True}
     res2 = {"id": 2, "name": "Tokyo Sushi", "latitude": 35.6, "longitude": 139.6, "is_published": True}
 
-    restaurant_service.restaurant_repository.restaurants = {1: res1, 2: res2}
+    service.restaurant_repository.restaurants = {1: res1, 2: res2}
 
     # Radius of 20,000km
-    results = restaurant_service.get_nearby_restaurants(customer, radius_km=20000.0)
+    results = service.get_nearby_restaurants(customer, radius_km=20000.0)
 
     assert len(results) == 2
 
-def test_get_nearby_restaurants_zero_radius(restaurant_service):
+def test_get_nearby_restaurants_zero_radius(service):
     """
     Feat3-FR1:
     Edge Case: Radius of 0.0 should only return
@@ -245,9 +250,9 @@ def test_get_nearby_restaurants_zero_radius(restaurant_service):
     res_exact = {"id": 1, "name": "Same Spot", "latitude": 10.0, "longitude": 10.0, "is_published": True}
     res_near = {"id": 2, "name": "Near Spot", "latitude": 10.0001, "longitude": 10.0001, "is_published": True}
 
-    restaurant_service.restaurant_repository.restaurants = {1: res_exact, 2: res_near}
+    service.restaurant_repository.restaurants = {1: res_exact, 2: res_near}
 
-    results = restaurant_service.get_nearby_restaurants(customer, radius_km=0.0)
+    results = service.get_nearby_restaurants(customer, radius_km=0.0)
 
     assert len(results) == 1
     assert results[0]["id"] == 1
