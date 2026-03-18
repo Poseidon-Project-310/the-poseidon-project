@@ -53,7 +53,7 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     assert updated_data["address"] == "456 New Ave"
     assert updated_data["is_published"] is True
 
-<<<<<<< HEAD:backend/tests/restaurant/unit_tests/test_restaurant_repo.py
+
 def test_create_restaurant_with_missing_coordinates(
         restaurant_repo, owner):
     """
@@ -100,8 +100,6 @@ def test_repository_safety_net_forces_false_publication(
     assert updated_data["is_published"] is False
     assert updated_data["latitude"] == 0.0
 
-=======
->>>>>>> abc67dd9fd17c71b01ce00104e19d68b1e308e7b:backend/tests/repositories/test_restaurant_repo.py
 # --- Tagging ---
 
 
