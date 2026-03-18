@@ -53,7 +53,7 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     assert updated_data["address"] == "456 New Ave"
     assert updated_data["is_published"] is True
 
-<<<<<<<<< Temporary merge branch 1:backend/tests/restaurant/unit_tests/test_restaurant_repo.py
+
 def test_create_restaurant_with_missing_coordinates(
         restaurant_repo, owner):
     """
