@@ -53,6 +53,47 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     assert updated_data["address"] == "456 New Ave"
     assert updated_data["is_published"] is True
 
+def test_create_restaurant_with_missing_coordinates(
+        restaurant_repo, owner):
+    """
+    Feat3-FR1: Ensures that if the restaurant object
+    lacks lat/long attributes,
+    the repo defaults them to 0.0 instead of crashing.
+    """
+    minimal_res = Restaurant(name="Minimal", owner=owner)
+
+    if hasattr(minimal_res, 'latitude'):
+        del minimal_res.latitude
+    if hasattr(minimal_res, 'longitude'):
+        del minimal_res.longitude
+
+    res_id = restaurant_repo.create_restaurant(minimal_res)
+    stored_data = restaurant_repo.get_by_id(res_id)
+
+    assert stored_data["latitude"] == 0.0
+    assert stored_data["longitude"] == 0.0
+
+# --- Coordinates ---
+
+
+def test_repository_safety_net_forces_false_publication(
+        restaurant_repo, sample_restaurant):
+    """
+    Safety Net: Verifies that update_restaurant overrides is_published to False
+    if latitude or longitude are 0.0.
+    """
+    res_id = restaurant_repo.create_restaurant(sample_restaurant)
+
+    sample_restaurant.latitude = 0.0
+    sample_restaurant.longitude = 0.0
+    sample_restaurant.is_published = False
+
+    restaurant_repo.update_restaurant(sample_restaurant)
+
+    updated_data = restaurant_repo.get_by_id(res_id)
+    assert updated_data["is_published"] is False
+    assert updated_data["latitude"] == 0.0
+
 # --- Tagging ---
 
 
@@ -110,7 +151,6 @@ def test_update_menu_item_preserves_extra_fields(
     restaurant_repo.add_menu_item(res_id, sample_item)
 
     # Simulate a field we didn't account for in the model
-    # (e.g., from a future DB migration)
     stored_res = restaurant_repo.get_by_id(res_id)
     stored_res["menu"][0]["calories"] = 500
     item_id = stored_res["menu"][0]["id"]
@@ -135,6 +175,55 @@ def test_add_menu_item_with_tags(restaurant_repo, restaurant, sample_item):
     stored_res = restaurant_repo.get_by_id(restaurant.id)
     stored_item = stored_res["menu"][0]
     assert "Popular" in stored_item["tags"]
+
+# --- Tagging ---
+
+
+def test_add_menu_item_with_tags(restaurant_repo, restaurant, sample_item):
+    # Test for Feat2-FR2: Tagging Menu items
+    # Functional test: Add tags to new menu item
+    restaurant_repo.create_restaurant(restaurant)
+
+    restaurant_repo.add_menu_item(restaurant.id, sample_item)
+
+    stored_res = restaurant_repo.get_by_id(restaurant.id)
+    stored_item = stored_res["menu"][0]
+    assert "Popular" in stored_item["tags"]
+
+# --- Updating menu ---
+
+
+def test_update_menu_item(restaurant_repo, restaurant, sample_item):
+    # Feat2-FR4: Verifies existing menu item data can be edited
+    restaurant_repo.create_restaurant(restaurant)
+
+    stored_res = restaurant_repo.get_by_id(restaurant.id)
+    stored_item_id = stored_res["menu"][0]["id"]  # The burger from conftest
+
+    updated_item = MenuItem(
+        name="Premium Burger", price=15.0, id=stored_item_id)
+    success = restaurant_repo.update_menu_item(
+        restaurant.id, stored_item_id, updated_item)
+
+    assert success is True
+    final_data = restaurant_repo.get_by_id(restaurant.id)
+    assert final_data["menu"][0]["name"] == "Premium Burger"
+
+
+def test_remove_menu_item(restaurant_repo, restaurant, sample_item):
+    # FR4: Verifies an item can be removed from the menu.
+    restaurant_repo.create_restaurant(restaurant)
+
+    # Grab the ID of the first item (the burger)
+    stored_res = restaurant_repo.get_by_id(restaurant.id)
+    item_id_to_remove = stored_res["menu"][0]["id"]
+
+    success = restaurant_repo.remove_menu_item(
+        restaurant.id, item_id_to_remove)
+
+    assert success is True
+    updated_res = restaurant_repo.get_by_id(restaurant.id)
+    assert len(updated_res["menu"]) == 0
 
 # --- Browsing and Search ---
 
