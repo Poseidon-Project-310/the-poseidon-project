@@ -32,6 +32,8 @@ class RestaurantRepository:
             "phone": restaurant.phone,
             "open_time": restaurant.open_time,
             "close_time": restaurant.close_time,
+            "latitude": getattr(restaurant, 'latitude', 0.0),
+            "longitude": getattr(restaurant, 'longitude', 0.0),
             "is_published": restaurant.is_published,
             "menu": [{
                 "id": item.id,
@@ -55,6 +57,8 @@ class RestaurantRepository:
         # Update fields and save changes to data store
         res_dict = self.get_by_id(restaurant.id)
         if res_dict:
+            if restaurant.latitude == 0.0 or restaurant.longitude == 0.0:
+                restaurant.is_published = False
             # We create a map of only the fields we want to sync
             changes = {
                 "name": restaurant.name,
