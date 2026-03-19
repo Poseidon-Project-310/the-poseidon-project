@@ -41,7 +41,6 @@ def test_restaurant_initialization(sample_restaurant):
     # The restaurant model initializes correctly
     assert sample_restaurant.name == "Testaurant"
     assert sample_restaurant.address == "123 Test St"
-    assert sample_restaurant.id is None
     assert sample_restaurant.open_time == 900
     assert isinstance(sample_restaurant.id, int)
     assert sample_restaurant.id == 0
@@ -79,7 +78,7 @@ def test_validate_for_publish_success(mock_owner):
         phone="123-456-7890",
         open_time=900,
         close_time=2100,
-        menu=[MenuItem(id=1, name="Burger", price=9.99)]
+        menu=[MenuItem(id=1, restaurant_id=1, name="Burger", price=9.99)]
     )
     restaurant.validate_for_publish()
 
