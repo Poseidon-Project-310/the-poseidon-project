@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .pytest_cache/
 pytest.ini
+
+# Ignore the users.json file which contains user data
