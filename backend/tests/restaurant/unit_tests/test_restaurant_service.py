@@ -1,4 +1,4 @@
-# backend/tests/restaurant/unit_tests/test_menu_item_model.py
+# backend/tests/restaurant/unit_tests/test_restaurant_service.py
 import pytest
 from unittest.mock import MagicMock
 from backend.models.user.customer import Customer
@@ -24,6 +24,16 @@ def customer():
         latitude=0.0,
         longitude=0.0
     )
+
+@pytest.fixture
+def restuarant():
+    r = Restaurant(name="John's Diner", location="123 Main St")
+    r.id = 1
+    item = MagicMock()
+    item.__dict__ = {"name": "Burger", "price": 10.0}
+    r.menu = [item]
+    return r
+
 
 # ---  Registration and roles---
 
@@ -101,7 +111,10 @@ def test_admin_customer_perspective(service, mock_repo, restaurant):
     restaurant.phone = "555-555-5555"
     restaurant.open_time = 900
     restaurant.close_time = 2200
-    restaurant.menu = ["Item"]
+    
+    item = MagicMock()
+    item.__dict__ = {"name": "Burger", "price": 10.0}
+    restaurant.menu = [item]
 
     mock_repo.get_by_id.return_value = restaurant
 
