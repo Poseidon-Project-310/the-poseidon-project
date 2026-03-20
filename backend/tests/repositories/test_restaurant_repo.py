@@ -16,7 +16,6 @@ def restaurant_repo():
 
 
 @pytest.fixture
-<<<<<<< F3FR3_Repo
 def owner():
     class MockOwner:
         id = 1
@@ -24,8 +23,6 @@ def owner():
 
 
 @pytest.fixture
-=======
->>>>>>> main
 def sample_restaurant(owner):
     return Restaurant(
         name="Testaurant",
@@ -63,7 +60,6 @@ def test_update_restaurant(restaurant_repo, sample_restaurant):
     assert updated_data["address"] == "456 New Ave"
     assert updated_data["is_published"] is True
 
-<<<<<<< F3FR3_Repo
 # --- Ratings and Reviews  ---
 
 def test_update_restaurant_rating_persistence(restaurant_repo, sample_restaurant):
@@ -125,8 +121,48 @@ def test_add_review_nonexistent_restaurant(restaurant_repo):
     success = restaurant_repo.add_review_to_restaurant(999, {"rating": 5})
     assert success is False
 
-=======
->>>>>>> main
+
+def test_create_restaurant_with_missing_coordinates(
+        restaurant_repo, owner):
+    """
+    Feat3-FR1: Ensures that if the restaurant object
+    lacks lat/long attributes,
+    the repo defaults them to 0.0 instead of crashing.
+    """
+    minimal_res = Restaurant(name="Minimal", owner=owner)
+
+    if hasattr(minimal_res, 'latitude'):
+        del minimal_res.latitude
+    if hasattr(minimal_res, 'longitude'):
+        del minimal_res.longitude
+
+    res_id = restaurant_repo.create_restaurant(minimal_res)
+    stored_data = restaurant_repo.get_by_id(res_id)
+
+    assert stored_data["latitude"] == 0.0
+    assert stored_data["longitude"] == 0.0
+
+# --- Coordinates ---
+
+
+def test_repository_safety_net_forces_false_publication(
+        restaurant_repo, sample_restaurant):
+    """
+    Safety Net: Verifies that update_restaurant overrides is_published to False
+    if latitude or longitude are 0.0.
+    """
+    res_id = restaurant_repo.create_restaurant(sample_restaurant)
+
+    sample_restaurant.latitude = 0.0
+    sample_restaurant.longitude = 0.0
+    sample_restaurant.is_published = False
+
+    restaurant_repo.update_restaurant(sample_restaurant)
+
+    updated_data = restaurant_repo.get_by_id(res_id)
+    assert updated_data["is_published"] is False
+    assert updated_data["latitude"] == 0.0
+
 # --- Tagging ---
 
 
@@ -184,10 +220,6 @@ def test_update_menu_item_preserves_extra_fields(
     restaurant_repo.add_menu_item(res_id, sample_item)
 
     # Simulate a field we didn't account for in the model
-<<<<<<< F3FR3_Repo
-=======
-    # (e.g., from a future DB migration)
->>>>>>> main
     stored_res = restaurant_repo.get_by_id(res_id)
     stored_res["menu"][0]["calories"] = 500
     item_id = stored_res["menu"][0]["id"]
@@ -213,8 +245,6 @@ def test_add_menu_item_with_tags(restaurant_repo, restaurant, sample_item):
     stored_item = stored_res["menu"][0]
     assert "Popular" in stored_item["tags"]
 
-<<<<<<< F3FR3_Repo
-=======
 # --- Tagging ---
 
 
@@ -264,7 +294,6 @@ def test_remove_menu_item(restaurant_repo, restaurant, sample_item):
     updated_res = restaurant_repo.get_by_id(restaurant.id)
     assert len(updated_res["menu"]) == 0
 
->>>>>>> main
 # --- Browsing and Search ---
 
 
