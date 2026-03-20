@@ -5,7 +5,7 @@ from backend.models.restaurant.menu_item_model import MenuItem
 
 
 class RestaurantRepository:
-    def __init__(self, db_connection):
+    def __init__(self, db_connection: list):
         # Initialize data storage collection
         self.db = db_connection
         self._next_res_id = 1
@@ -32,6 +32,8 @@ class RestaurantRepository:
             "phone": restaurant.phone,
             "open_time": restaurant.open_time,
             "close_time": restaurant.close_time,
+            "latitude": getattr(restaurant, 'latitude', 0.0),
+            "longitude": getattr(restaurant, 'longitude', 0.0),
             "is_published": restaurant.is_published,
             "menu": [{
                 "id": item.id,
@@ -55,6 +57,12 @@ class RestaurantRepository:
         # Update fields and save changes to data store
         res_dict = self.get_by_id(restaurant.id)
         if res_dict:
+            lat = getattr(restaurant, 'latitude', 0.0)
+            lng = getattr(restaurant, 'longitude', 0.0)
+            is_published = restaurant.is_published
+            
+            if lat == 0.0 or lng == 0.0:
+                is_published = False
             # We create a map of only the fields we want to sync
             changes = {
                 "name": restaurant.name,
@@ -69,6 +77,23 @@ class RestaurantRepository:
             res_dict.update(changes)
             return True
         return False
+    
+    def get_by_id(self, restaurant_id: int) -> Optional[Dict]:
+        """
+        Needed for tests to pass: Dummy method
+        Standardized to use int for ID lookups.
+        """
+        for restaurant in self.db:
+            if restaurant['id'] == restaurant_id:
+                return restaurant
+        return None
+
+    def get_all_restaurants(self) -> List[Dict]:
+        """
+        Needed for tests to pass: dummy method
+        Used by Service for Haversine/Nearby calculations.
+        """
+        return self.db
 
     def add_menu_item(self, restaurant_id: int, menu_item: MenuItem) -> bool:
         """
@@ -131,7 +156,7 @@ class RestaurantRepository:
                     return True
         return False
 
-    def remove_menu_item(self, restaurant_id: str, item_id: str) -> bool:
+    def remove_menu_item(self, restaurant_id: int, item_id: int) -> bool:
         """
         Feat2-FR4 (Adding and editing menu items)
         Removes an item from the menu list.
