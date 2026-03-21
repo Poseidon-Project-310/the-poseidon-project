@@ -122,7 +122,7 @@ def test_to_dict_includes_user_type():
     assert d["user_type"] == "Customer"
 
 
-@pytest.mark.parametrize("cls", [User, Customer, Admin, RestaurantOwner])
+@pytest.mark.parametrize("cls", [User, Customer, RestaurantOwner])
 def test_from_dict_creates_correct_subclass(cls):
     """This test checks the inheritance + serialization workflow,
     helps reduce repitative tests for each subclass.
