@@ -6,7 +6,6 @@ import pytest
 # pip install -r requirements.txt
 from backend.models.user.user_model import User
 from backend.models.user.customer import Customer
-from backend.models.user.admin import Admin
 from backend.models.user.restaurant_owner_model import RestaurantOwner
 
 
