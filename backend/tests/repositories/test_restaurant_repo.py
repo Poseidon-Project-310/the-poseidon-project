@@ -8,7 +8,7 @@ from backend.models.restaurant.restaurant_model import Restaurant
 @patch("pathlib.Path.exists")
 def test_load_valid_data(mock_exists, mock_file):
     """
-    Equivalence Partitioning: Valid input class
+    Valid Equivalence Partitioning
     Load all of the data
     """
     mock_exists.return_value = True
@@ -28,7 +28,7 @@ def test_load_valid_data(mock_exists, mock_file):
 @patch("pathlib.Path.exists")
 def test_load_all_missing_file(mock_exists):
     """
-    Equivalence Partitioning (Missing Input Class)
+    Invalid Equivalence Partitioning
     Handles loading a file that doesnt exist and pass
     a FileNotFoundError
     """
@@ -59,7 +59,7 @@ def test_load_all_corrupted_data(mock_exists, mock_file):
 @patch("backend.repositories.restaurant_repository.open", new_callable=mock_open)
 def test_save_all_serialization(mock_file):
     """
-    Functional test:
+    Mocking Functionality
     Verifies that the repository correctly writes data.
     """
     repo = RestaurantRepository()
