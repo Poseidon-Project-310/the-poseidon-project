@@ -14,8 +14,9 @@ class RestaurantRepository:
             self._file_path = Path(file_path)
         else:
             self._file_path = Path(__file__).parent.parent / "data" / "restaurants.json"
-
-        self._file_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        if not self._file_path.parent.exists():
+            self._file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def load_all(self) -> List[Restaurant]:
         """
@@ -26,10 +27,11 @@ class RestaurantRepository:
         
         try:
             with open(self._file_path, 'r') as f:
-                content = f.read().strip()
-                if not content:
-                    return []
                 data = json.load(f)
+                
+                if not isinstance(data, list):
+                    return[]
+    
                 return [Restaurant(**item) for item in data]
         except (json.JSONDecodeError, FileNotFoundError):
             return []
@@ -43,5 +45,5 @@ class RestaurantRepository:
             with open(self._file_path, 'w') as f:
                 json.dump(data, f, indent=4)
             return True
-        except IOError:
+        except (IOError, TypeError):
             return False

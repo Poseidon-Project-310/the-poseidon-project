@@ -40,15 +40,17 @@ def test_load_all_missing_file(mock_exists):
     assert results == []
 
 
-@patch("backend.repositories.restaurant_repository.open", new_callable=mock_open, read_data="INVALID_JSON_STREAM")
+@patch("backend.repositories.restaurant_repository.json.load")
 @patch("pathlib.Path.exists")
-def test_load_all_corrupted_data(mock_exists, mock_file):
+def test_load_all_corrupted_data(mock_exists, mock_json_load):
     """
     Fault Injection/ Exception Handling:
     Injects corrupted JSON to trigger a JSONDecodeError
     """
     mock_exists.return_value = True
-    
+
+    mock_json_load.side_effect = json.JSONDecodeError("Invalid JSON", "INVALID_JSON_STREAM", 0)
+
     repo = RestaurantRepository()
     results = repo.load_all()
     
