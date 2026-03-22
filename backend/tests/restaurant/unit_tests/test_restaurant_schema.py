@@ -1,120 +1,182 @@
 # backend/tests/restaurant/unit_tests/test_restaurant_schema.py
 import pytest
 from pydantic import ValidationError
-from backend.schemas.restaurant_schema import RestaurantSchema
+from backend.schemas.restaurant_schema import RestaurantSchema, UpdateRestaurantSchema
 
 @pytest.fixture
-def base_data():
+def base_json_data():
     return{
-        "_id": "res_123",
-        "_name": "Testaurant",
-        "_menu": ["Burger", "Fries"],
-        "_open_time": 900,
-        "_close_time": 2200,
-        "_latitude": 49.2827,
-        "_longitude": -123.1207,
-        "_is_published": False
+        "id": 1,
+        "name": "Restaurant 1",
+        "menu": ["Beef Pie", "Burger"]
     }
 
-def test_restaurant_schema_initialization(base_data):
+@pytest.fixture
+def optional_metadata():
+    return{
+        "open_time": 900,
+        "close_time": 2200,
+        "latitude": 49.49,
+        "longitude": -149.49,
+        "is_published": True,
+        "phone": "555-555-5555"
+    }
+
+@pytest.fixture
+def full_restaurant_data(base_json_data, optional_metadata):
+    """Combines both for testing a fully populated model."""
+    return {**base_json_data, **optional_metadata}
+
+# --- Initialization tests ---
+
+def test_restaurant_schema_initialization(base_json_data):
     """
     Equivalence Partitioning
-    Maps the valid data from the fixture to the private attributes
+    Ensures that the mandatory data is correctly mapped to the schema
     """
-    restaurant = RestaurantSchema(**base_data)
+    restaurant = RestaurantSchema(**base_json_data)
+    assert restaurant.id == 1
+    assert restaurant.name == "Restaurant 1"
+    assert "Burger" in restaurant.menu
 
-    assert restaurant.restaurant_id == "res_123"
-    assert restaurant.name == "Testaurant"
-    assert restaurant.get_open_time == 900
-
-
-def test_restaurant_optional_fields_null(base_data):
+def test_restaurant_populate_by_alias_and_name():
     """
-    Equivalence Partitioning
-    Test that optional tests when not filled out doesn't cause an error
+    Functional logic test
+    Tests that populate_by_name accepts name and alias
     """
-    restaurant = RestaurantSchema(**base_data)
-    assert restaurant._address is None
-    assert restaurant._phone is None
-
-
-def test_restaurant_encapsulation_boundaries(base_data):
-    """
-    Fault Injection
-    Tries to access a protected attribute
-    """
-    restaurant = RestaurantSchema(**base_data)
-
-    public_data = restaurant.model_dump()
-    assert "_id" not in public_data
-    assert "_name" not in public_data
-
-    with pytest.raises(AttributeError):
-        _ = restaurant.some.non_existing_field
+    data_with_alias = {"id": 1, "name": "A", "menu": [], "_phone": "123"}
+    data_with_name = {"id": 1, "name": "A", "menu": [], "phone": "123"}
     
+    assert RestaurantSchema(**data_with_alias).phone == "123"
+    assert RestaurantSchema(**data_with_name).phone == "123"
 
-def test_restaurant_invalid_time_logic(base_data):
+def test_restaurant_missing_mandatory_fields():
     """
     Exception Handling
-    Tests handling invalid data and throws errors through setters
+    Ensures a Validation Error is raised when
+    a mandatory field is missing
     """
-    restaurant = RestaurantSchema(**base_data)
-
-    with pytest.raises(ValueError, match="Invalid time format"):
-        restaurant.get_open_time = 9999
-
-
-def test_restaurant_invalid_time_relationship(base_data):
-    """
-    Exception Handling
-    Ensures that open_time cannot be after or equal to close_time
-    """
-    base_data["_open_time"] = 2200
-    base_data["_close_time"] = 900
-
     with pytest.raises(ValidationError) as exc_info:
-        RestaurantSchema(**base_data)
+        RestaurantSchema(id=1)
+    
+    assert "name" in str(exc_info.value)
+    assert "menu" in str(exc_info.value)
 
-    assert "open_time must be before close_time" in str(exc_info.value)
+
+# --- Handling Boundaries ---
 
 
-def test_restaurant_serialization_mock(base_data):
+def test_restaurant_latitude_limits(base_json_data):
     """
-    Mocking
-    Testing saving through the repository
+    Test Boundary Value
+    Tests the edges of the latitude
     """
-    restaurant = RestaurantSchema(**base_data)
-    mock_save_data = restaurant.model_dump(by_alias=True, exclude_none=True)
+    # Valid boundaries
+    base_json_data["latitude"] = 90.0
+    assert RestaurantSchema(**base_json_data).latitude == 90.0
+    base_json_data["latitude"] = -90.0
+    assert RestaurantSchema(**base_json_data).latitude == -90.0
+    
+    # Invalid boundaries
+    for invalid_lat in [90.1, -90.1]:
+        base_json_data["latitude"] = invalid_lat
+        with pytest.raises(ValidationError):
+            RestaurantSchema(**base_json_data)
 
-    assert "_id" in mock_save_data
-    assert "_name" in mock_save_data
-    assert mock_save_data["_id"] == "res_123"
-
-
-def test_restaurant_status_update(base_data):
+def test_restaurant_longitude_limits(base_json_data):
     """
-    Positive Functional Test
-    Test of data flow to publish restaurant
+    Test Boundary Value
+    Tests the edges of the longitude
     """
-    restaurant = RestaurantSchema(**base_data)
-    assert restaurant.is_published is False
+    # Valid boundaries
+    base_json_data["longitude"] = 180.0
+    assert RestaurantSchema(**base_json_data).longitude == 180.0
+    base_json_data["longitude"] = -180.0
+    assert RestaurantSchema(**base_json_data).longitude == -180.0
 
-    restaurant.is_published = True
-    assert restaurant.is_published is True
+    # Invalid boundaries
+    for invalid_lon in [180.1, -180.1]:
+        base_json_data["longitude"] = invalid_lon
+        with pytest.raises(ValidationError):
+            RestaurantSchema(**base_json_data)
 
-def test_restaurant_attr_to_private_mapping():
+
+def test_restaurant_time_limits(base_json_data):
+    """
+    Test Boundary Value
+    Test edges of the 2400 clock
+    """
+    # Test lower boundary
+    base_json_data["open_time"] = 0
+    assert RestaurantSchema(**base_json_data).open_time == 0
+
+    # Test invalid upper boundary
+    base_json_data["open_time"] = 2401
+    with pytest.raises(ValidationError):
+        RestaurantSchema(**base_json_data)
+
+
+# --- Model Validators ---
+
+
+def test_restaurant_edge_case_equal_times(base_json_data):
+    """
+    Edge Case
+    Tests open and close times cannot equal one another
+    """
+    base_json_data["open_time"] = 1200
+    base_json_data["close_time"] = 1200
+    with pytest.raises(ValidationError, match="open_time must be before close_time"):
+        RestaurantSchema(**base_json_data)
+
+
+def test_restaurant_invalid_time(base_json_data):
+    """
+    Fault injection
+    Tests handling invalid data in open time
+    to trigger the field validator logic
+    """
+    base_json_data["open_time"] = 2500
+    with pytest.raises(ValidationError, match="Invalid time format"):
+        RestaurantSchema(**base_json_data)
+
+
+# --- Update tests ---
+
+def test_update_functional_partial_update():
     """
     Functional Test
-    Match the public fields to post_init
+    Tests that changing a field doesn't require changing other fields 
     """
-    input_data = {
-        "res_id_attr": "res_123",
-        "name_attr": "Testaurant",
-        "open_time_attr": 900,
-        "is_published_attr": True
-    }
-    restaurant = RestaurantSchema(**input_data)
+    update_data = {"name": "Updated Name"}
+    update_obj = UpdateRestaurantSchema(**update_data)
+    assert update_obj.name == "Updated Name"
+    assert update_obj.menu is None
 
-    assert restaurant._id == "res_123"
-    assert restaurant.restaurant_id == "res_123"
-    assert restaurant._is_published is True
+
+def test_update_schema_with_partial_none():
+    """
+    Functional Test
+    Tests that updating a field while others are none still passes
+    """
+    update_data = {"name": "New Name"}
+    try:
+        UpdateRestaurantSchema(**update_data)
+    except ValidationError as e:
+        pytest.fail(f"UpdateRestaurantSchema failed on partial update: {e}")
+
+
+# --- Serialization test ---
+
+def test_restaurant_serialization_mock(full_restaurant_data):
+    """
+    Mocking
+    Mocks the behaviour of the repository and uses model_dump properly
+    """
+    restaurant = RestaurantSchema(**full_restaurant_data)
+    db_ready_data = restaurant.model_dump(by_alias=True, exclude_none=True)
+
+    assert "id" in db_ready_data
+    assert "_phone" in db_ready_data
+    assert "_open_time" in db_ready_data
+
