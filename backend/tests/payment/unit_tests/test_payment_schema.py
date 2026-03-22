@@ -155,3 +155,31 @@ def test_calculate_fees_and_taxes_invalid_subtotal():
 
     with pytest.raises(ValueError):
         service.calculate_fees_and_taxes(-10)
+
+def test_calculate_total_valid():
+    service = PaymentService()
+
+    subtotal = 40.0
+    breakdown = service.calculate_total(subtotal)
+
+    assert breakdown.subtotal == 40.0
+    assert breakdown.delivery_fee == 5.00
+    assert breakdown.service_fee == 2.00
+    assert breakdown.tax == 4.80
+    assert breakdown.total == 51.80
+
+
+def test_calculate_total_free_delivery():
+    service = PaymentService()
+
+    subtotal = 60.0
+    breakdown = service.calculate_total(subtotal)
+
+    assert breakdown.delivery_fee == 0.00
+
+
+def test_calculate_total_invalid_subtotal():
+    service = PaymentService()
+
+    with pytest.raises(ValueError):
+        service.calculate_total(-10)

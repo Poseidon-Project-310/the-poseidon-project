@@ -1,4 +1,5 @@
 from typing import Any
+from backend.models.payment.payment_schema import CostBreakdown
 
 
 class PaymentService:
@@ -82,3 +83,21 @@ class PaymentService:
 
     def _calculate_tax(self, subtotal: float) -> float:
         return round(subtotal * 0.12, 2)
+
+    def calculate_total(self, subtotal: float) -> CostBreakdown:
+        """
+        Combines subtotal, fees, and tax into a CostBreakdown object
+        """
+        self._validate_subtotal(subtotal)
+
+        fees = self.calculate_fees_and_taxes(subtotal)
+
+        total = subtotal + fees["delivery_fee"] + fees["service_fee"] + fees["tax"]
+
+        return CostBreakdown(
+            subtotal=subtotal,
+            delivery_fee=fees["delivery_fee"],
+            service_fee=fees["service_fee"],
+            tax=fees["tax"],
+            total=round(total, 2),
+        )
