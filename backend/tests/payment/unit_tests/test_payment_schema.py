@@ -204,3 +204,29 @@ def test_retrieve_payment_info_none():
 
     with pytest.raises(ValueError):
         service.retrieve_payment_info(None)
+
+def test_process_payment_success(base_payment_data):
+    service = PaymentService()
+    payment = PaymentSchema(**base_payment_data)
+
+    result = service.process_payment(payment)
+
+    assert result.status == PaymentStatus.ACCEPTED
+
+
+def test_process_payment_failure(base_payment_data):
+    service = PaymentService()
+
+    base_payment_data["card_number"] = 123  # invalid short number
+    payment = PaymentSchema(**base_payment_data)
+
+    result = service.process_payment(payment)
+
+    assert result.status == PaymentStatus.DENIED
+
+
+def test_process_payment_none():
+    service = PaymentService()
+
+    with pytest.raises(ValueError):
+        service.process_payment(None)
