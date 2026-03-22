@@ -183,3 +183,24 @@ def test_calculate_total_invalid_subtotal():
 
     with pytest.raises(ValueError):
         service.calculate_total(-10)
+
+def test_retrieve_payment_info_valid(base_payment_data):
+    service = PaymentService()
+    payment = PaymentSchema(**base_payment_data)
+
+    result = service.retrieve_payment_info(payment)
+
+    assert result["id"] == 1
+    assert result["order"]["order_id"] == 101
+    assert result["card_name"] == "Fabiha Afifa"
+    assert result["card_number"] == 1234567812345678
+    assert result["expiration"] == "12/27"
+    assert result["status"] == PaymentStatus.ACCEPTED
+    assert result["amount"] == 42.50
+
+
+def test_retrieve_payment_info_none():
+    service = PaymentService()
+
+    with pytest.raises(ValueError):
+        service.retrieve_payment_info(None)
