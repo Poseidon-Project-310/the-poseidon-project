@@ -156,6 +156,7 @@ def test_calculate_fees_and_taxes_invalid_subtotal():
     with pytest.raises(ValueError):
         service.calculate_fees_and_taxes(-10)
 
+
 def test_calculate_total_valid():
     service = PaymentService()
 
@@ -184,6 +185,7 @@ def test_calculate_total_invalid_subtotal():
     with pytest.raises(ValueError):
         service.calculate_total(-10)
 
+
 def test_retrieve_payment_info_valid(base_payment_data):
     service = PaymentService()
     payment = PaymentSchema(**base_payment_data)
@@ -205,6 +207,7 @@ def test_retrieve_payment_info_none():
     with pytest.raises(ValueError):
         service.retrieve_payment_info(None)
 
+
 def test_process_payment_success(base_payment_data):
     service = PaymentService()
     payment = PaymentSchema(**base_payment_data)
@@ -217,7 +220,7 @@ def test_process_payment_success(base_payment_data):
 def test_process_payment_failure(base_payment_data):
     service = PaymentService()
 
-    base_payment_data["card_number"] = 123  # invalid short number
+    base_payment_data["card_number"] = 123
     payment = PaymentSchema(**base_payment_data)
 
     result = service.process_payment(payment)
@@ -230,3 +233,30 @@ def test_process_payment_none():
 
     with pytest.raises(ValueError):
         service.process_payment(None)
+
+def test_create_fulfillment_request_success(base_payment_data):
+    service = PaymentService()
+    payment = PaymentSchema(**base_payment_data)
+    payment.status = PaymentStatus.ACCEPTED
+
+    result = service.create_fulfillment_request(payment)
+
+    assert result["payment_id"] == 1
+    assert result["order"]["order_id"] == 101
+    assert result["status"] == "fulfillment_requested"
+
+
+def test_create_fulfillment_request_denied_payment(base_payment_data):
+    service = PaymentService()
+    payment = PaymentSchema(**base_payment_data)
+    payment.status = PaymentStatus.DENIED
+
+    with pytest.raises(ValueError):
+        service.create_fulfillment_request(payment)
+
+
+def test_create_fulfillment_request_none():
+    service = PaymentService()
+
+    with pytest.raises(ValueError):
+        service.create_fulfillment_request(None)
