@@ -1,58 +1,75 @@
-# backend/models/user/init.user.py
-# this file defines a user class, it represents users within
-# our system (customers, restaurant owners, admins).
+# backend/models/user/user_model.py
+# this file defines one merged User class.
+# instead of having separate admin / customer / restaurant owner models,
+# we now store all user information in one single user model.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Dict
-import bcrypt
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 
 @dataclass
 class User:
-    id: int
+    id: str
     username: str
     email: str
     password_hash: str
+    phone: str = ""
+    address: str = ""
+    location: str = ""
+    postal_code: str = ""
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    cart: List[str] = field(default_factory=list)
+    orders: List[str] = field(default_factory=list)
+    owned_restaurants_id: List[str] = field(default_factory=list)
 
     """
-    User Model (based on UML diagram)
+    User Model (merged user version)
 
-    UML Attributes:
-      - id: int
-      - username: String
-      - password: String
+    this model represents every user in the system using one class only.
 
-    In our code:
-      - we stored password_hash instead of raw password for safety,
-      as hashing is a one way function and it is unsafe to store raw passwords.
-        hashing takes a raw password and converts it into a fized length of
-        random string, and we can check if raw password is correct by
-        hash matching.
-      - we also include role (customer/admin/restaurant_owner)
-      so we can represent Admin + RestaurantOwner +
-      Customer without needing 3 separate classes yet.
+    old setup:
+      - User
+      - Customer
+      - RestaurantOwner
+      - Admin
+
+    new setup:
+      - only one User class
+
+    why we changed this:
+      - it keeps the architecture simpler
+      - it matches the updated project structure
+      - it removes the need for subclass conversion when loading JSON
+      - restaurant ownership can now be tracked using owned_restaurants_id
+
+    important notes:
+      - id is now a string, not an int
+      - password_hash is stored, not the raw password
+      - password hashing/checking should happen in the service layer
+      - JSON saving/loading should happen in the repository layer
+      - this model should mainly describe the shape of a user
+        and validate that the data is valid
     """
 
     def __post_init__(self) -> None:
         """
-        This runs right after the dataclass constructor,
-        which means it runs after we create a User object.
-        We use it to validate that the User object is not invalid.
+        this runs right after the dataclass constructor,
+        so it runs immediately after we create a User object.
+
+        we use it to validate the fields and make sure
+        the object is not created with invalid data.
         """
-        if not isinstance(self.id, int) or self.id < 0:
-            raise ValueError("id must be a non-negative integer")
+
+        if not isinstance(self.id, str) or not self.id.strip():
+            raise ValueError("id must be a non-empty string")
 
         if not isinstance(self.username, str) or not self.username.strip():
             raise ValueError("username must be a non-empty string")
 
-        if not isinstance(self.password_hash,
-                          str) or not self.password_hash.strip():
-            raise ValueError("password_hash must be a non-empty string")
-
-        if not isinstance(self.email,
-                          str) or not self.email.strip():
+        if not isinstance(self.email, str) or not self.email.strip():
             raise ValueError("email must be a non-empty string")
 
         if "@" not in self.email:
@@ -61,82 +78,32 @@ class User:
         if "." not in self.email.split("@", 1)[1]:
             raise ValueError("email domain must contain '.'")
 
-    # ---Password helpers---
+        if not isinstance(self.password_hash, str) or not self.password_hash.strip():
+            raise ValueError("password_hash must be a non-empty string")
 
-    @staticmethod
-    def hash_password(raw_password: str) -> str:
-        """
-        Convert a raw password into a bcrypt hash string,
-        bcrpyt is a hashing algorithm
-        and it is slow and salted, which is more secure against
-        brute-force attacks than SHA256.
-        """
-        if not isinstance(raw_password, str) or not raw_password.strip():
-            raise ValueError("password must be a non-empty string")
+        if not isinstance(self.phone, str):
+            raise ValueError("phone must be a string")
 
-        hashed_bytes = bcrypt.hashpw(raw_password.encode(
-            "utf-8"), bcrypt.gensalt())
-        return hashed_bytes.decode("utf-8")  # store as string in JSON
+        if not isinstance(self.address, str):
+            raise ValueError("address must be a string")
 
-    def check_password(self, raw_password: str) -> bool:
-        """Return True if the raw password matches our stored password_hash."""
-        if not isinstance(raw_password, str):
-            return False
-        return bcrypt.checkpw(
-            raw_password.encode("utf-8"),
-            self.password_hash.encode("utf-8")
-        )
+        if not isinstance(self.location, str):
+            raise ValueError("location must be a string")
 
-    def update_password(self, new_password: str) -> None:
-        """Update user's password_hash using bcrypt."""
-        self.password_hash = User.hash_password(new_password)
+        if not isinstance(self.postal_code, str):
+            raise ValueError("postal_code must be a string")
 
-    # ---Repo helpers (saving/loading)---
+        if self.latitude is not None and not isinstance(self.latitude, (int, float)):
+            raise ValueError("latitude must be a number or None")
 
-    def to_dict(self) -> Dict:
-        """Convert User into a dictionary (easy to save to JSON later)."""
-        data = {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "password_hash": self.password_hash,
-            "user_type": self.__class__.__name__,
-        }
-        from backend.models.user.customer import Customer
-        if isinstance(self, Customer):
-            data["address"] = getattr(self, "address", "")
-            data["latitude"] = getattr(self, "latitude", 0.0)
-            data["longitude"] = getattr(self, "longitude", 0.0)
+        if self.longitude is not None and not isinstance(self.longitude, (int, float)):
+            raise ValueError("longitude must be a number or None")
 
-        return data
+        if not isinstance(self.cart, list):
+            raise ValueError("cart must be a list")
 
-    @staticmethod
-    def from_dict(data: Dict) -> "User":
-        user_type = data.get("user_type", "User")
+        if not isinstance(self.orders, list):
+            raise ValueError("orders must be a list")
 
-        from backend.models.user.customer import Customer
-        from backend.models.user.restaurant_owner_model import RestaurantOwner
-        from backend.models.user.admin import Admin
-
-        cls_map = {
-            "User": User,
-            "Customer": Customer,
-            "RestaurantOwner": RestaurantOwner,
-            "Admin": Admin,
-        }
-
-        base_args = {
-            "id": int(data["id"]),
-            "username": str(data["username"]),
-            "email": str(data["email"]),
-            "password_hash": str(data["password_hash"]),
-        }
-
-        if user_type == "Customer":
-            base_args["address"] = data.get("address", "")
-            base_args["latitude"] = float(data.get("latitude", 0.0))
-            base_args["longitude"] = float(data.get("longitude", 0.0))
-
-        cls = cls_map.get(user_type, User)
-
-        return cls(**base_args)
+        if not isinstance(self.owned_restaurants_id, list):
+            raise ValueError("owned_restaurants_id must be a list")
