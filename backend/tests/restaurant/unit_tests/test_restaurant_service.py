@@ -34,6 +34,26 @@ def test_get_restaurant_by_id_not_found(service, mock_repo):
 
 # --- Assign owner to restaurant ---
 
+def test_assign_owner_success(service, mock_repo, restaurant):
+    """
+    Equivalence Partitioning
+    Ensures a owner can be assigned to a restaurant
+    """
+
+    mock_repo.load_all.return_value = [restaurant]
+    new_owner_id = 505
+
+    response, status = service.assign_owner_to_restaurant(restaurant.id, new_owner_id)
+
+    assert status == 200
+    assert response["message"] == "Owner assigned"
+    assert response["restaurant_id"] == restaurant.id
+
+    mock_repo.save_all.assert_called_once()
+
+    assert restaurant.owner_id == str(new_owner_id)
+
+
 def test_assign_owner_not_found(service, mock_repo):
     """
     Exception handling
