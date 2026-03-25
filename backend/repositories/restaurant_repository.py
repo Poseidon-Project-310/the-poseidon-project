@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from dataclasses import asdict
 from typing import List
-from backend.models.restaurant.restaurant_model import Restaurant
+from backend.schemas.restaurant_schema import Restaurant
 
 
 class RestaurantRepository:
@@ -41,7 +41,7 @@ class RestaurantRepository:
         Writes list of objects back to JSON
         """
         try:
-            data = [asdict(res) for res in restaurants]
+            data = [res.model_dump(by_alias=True) for res in restaurants]
             with open(self._file_path, 'w') as f:
                 json.dump(data, f, indent=4)
             return True

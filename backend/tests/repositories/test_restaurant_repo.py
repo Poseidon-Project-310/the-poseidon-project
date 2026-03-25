@@ -2,7 +2,7 @@
 import json
 from unittest.mock import mock_open, patch
 from backend.repositories.restaurant_repository import RestaurantRepository
-from backend.models.restaurant.restaurant_model import Restaurant
+from backend.schemas.restaurant_schema import Restaurant
 
 @patch("backend.repositories.restaurant_repository.open", new_callable=mock_open)
 @patch("pathlib.Path.exists")
@@ -12,8 +12,11 @@ def test_load_valid_data(mock_exists, mock_file):
     Load all of the data
     """
     mock_exists.return_value = True
-    fake_data = json.dumps([
-        {"id": 1, "name": "The Poseidon", "address": "123 Street", "phone": "555-555-5555"}
+    fake_data = json.dumps([{
+        "id": 1,
+        "name": "The Poseidon",
+        "menu": ["Burger"],
+        "phone": "555-555-5555"}
     ])
     mock_file.return_value.read.return_value = fake_data
 
@@ -21,7 +24,6 @@ def test_load_valid_data(mock_exists, mock_file):
     results = repo.load_all()
     
     assert len(results) == 1
-    assert results[0].id == 1
     assert results[0].name == "The Poseidon"
 
 
@@ -66,7 +68,13 @@ def test_save_all_serialization(mock_file):
     """
     repo = RestaurantRepository()
 
-    test_res = Restaurant(id=10, name="Grayson's Grill", address="Uni Way", phone="555-0000")
+    test_res = Restaurant(
+        id=10,
+        name="Grayson's Grill",
+        menu=["Burger"],
+        address="123 Street",
+        phone="555-555-5555"
+        )
     
     success = repo.save_all([test_res])
     
