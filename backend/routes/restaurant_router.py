@@ -17,7 +17,6 @@ def get_restaurants():
     """
     GET: Retrieve all restaurants via load all from service
     """
-    # Need to add a get all published method to service - placeholder for now
     return service.get_all_published()
 
 @router.get("/{restaurant_id}")
