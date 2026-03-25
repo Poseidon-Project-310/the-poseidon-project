@@ -6,7 +6,7 @@ import pytest
 def test_get_restaurants_list(client, mock_restaurant_service, restaurant):
     """
     Equivalence Partitioning
-    Ensutes you can see a list of restaurants and returns proper code
+    Ensures you can see a list of restaurants and returns proper code
     """
     mock_restaurant_service.get_all_published.return_value = [restaurant.model_dump()]
     response = client.get("/restaurants")
