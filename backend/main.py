@@ -8,3 +8,7 @@ app.include_router(restaurant_router.router)
 @app.get("/")
 def root():
     return {"message": "Welcome to The Poseidon Project"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
