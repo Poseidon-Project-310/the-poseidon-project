@@ -1,10 +1,13 @@
 from fastapi import FastAPI
+from backend.routes import restaurant_router
 
-app = FastAPI()
+app = FastAPI(title="The Poseidon Project")
+
+app.include_router(restaurant_router.router)
 
 @app.get("/")
 def root():
-    return {"message": "Poseidon backend is running"}
+    return {"message": "Welcome to The Poseidon Project"}
 
 @app.get("/health")
 def health():
