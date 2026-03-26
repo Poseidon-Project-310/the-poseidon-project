@@ -1,4 +1,5 @@
 item schema test documentation
+<img width="632" height="131" alt="Screenshot 2026-03-25 at 8 20 27 PM" src="https://github.com/user-attachments/assets/8771d507-db91-4f2f-9f78-8f910cbe7707" />
 <img width="707" height="136" alt="Screenshot 2026-03-24 at 7 15 15 PM" src="https://github.com/user-attachments/assets/eae7cb3f-3e03-4d20-8cf1-808577f1ec93" />
 
 For initialization tests there is equivalence partitioning that ensures data from conftest is correctly mapped to schema
@@ -12,5 +13,7 @@ For UUID logic tests, there is a fault injection test that tests that an invalid
 
 For update schema tests, we have a positive functional test that ensures you can partially update an item.
 Another test is a constraint test to ensure an invalid price is valid
+
+For tag tests, there is a data transformation test taht ensures all tags are treated the same and filtered. Another test uses fault injection for invalid tags
 
 For the Serialization test it ensures model_dump works
