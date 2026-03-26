@@ -1,55 +1,62 @@
-# backend/tests/conftest.py
-import pytest
 import sys
 from pathlib import Path
+from decimal import Decimal
+from uuid import uuid4
 from unittest.mock import MagicMock
 
 
-# add project root to import path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+
 @pytest.fixture
 def owner():
-    """
-    Return real RestaurantOwner
-    """
-    return RestaurantOwner(
-        id=1,
+    """Return a user representing a restaurant owner."""
+    return User(
+        id="1",
         username="John_Doe",
         email="john_doe@gmail.com",
-        password_hash="SecurePass123"
+        password_hash="SecurePass123",
+        owned_restaurants_id=["1"],
     )
+
 
 @pytest.fixture
 def mock_owner():
-    """
-    Return mock for tests where owner login is not important
-    """
-    mock = MagicMock(spec=RestaurantOwner)
-    mock.id = 99
+    """Return a mock user for owner-related tests."""
+    mock = MagicMock(spec=User)
+    mock.id = "99"
     mock.username = "MockUser"
+    mock.owned_restaurants_id = ["1"]
     return mock
+
 
 @pytest.fixture
 def sample_item():
-    """
-    return valid menu item for FR3
-    """
+    """Return a valid menu item."""
     return MenuItem(
         id=101,
         name="Burger",
         price=9.99,
-        tags=["Popular"])
+        tags=["Popular"],
+    )
+
+@pytest.fixture
+def raw_menu_item_data():
+    return {
+        "item_name": "Beef Pie",
+        "restaurant_id": 10,
+        "price": "12.50",
+        "id": str(uuid4())
+    }
 
 @pytest.fixture
 def restaurant(owner, sample_item):
-    """
-    Return default instance linked to owner
-    """
+    """Return a default restaurant linked to an owner."""
     return Restaurant(
         id=1,
         name="John's Diner",
         owner=owner,
-        menu=[sample_item]
+        menu=[sample_item],
     )
+
