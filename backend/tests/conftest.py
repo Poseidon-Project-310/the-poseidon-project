@@ -54,8 +54,12 @@ def restaurant():
 
 
 @pytest.fixture
-def mock_repo():
+def mock_item_repo():
     return MagicMock()
+
+@pytest.fixture
+def mock_restaurant_repo():
+     return MagicMock
 
 @pytest.fixture
 def service(mock_repo):
