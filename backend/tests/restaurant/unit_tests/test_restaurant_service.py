@@ -1,122 +1,200 @@
 # backend/tests/restaurant/unit_tests/test_restaurant_service.py
 import pytest
+from unittest.mock import MagicMock
 from backend.services.restaurant_service import RestaurantService
-from backend.models.user.customer import Customer
-from backend.models.user.restaurant_owner_model import RestaurantOwner
-from backend.models.restaurant.restaurant_model import Restaurant
+from backend.schemas.restaurant_schema import Restaurant
 
-class MockRepo:
-    def __init__(self):
-        self.restaurants = {}
-    
-    def create_restaurant(self, restaurant_data):
-        return "mock_id_123"
-    
-    def get_by_id(self, restaurant_id):
-        return self.restaurants.get(restaurant_id)
-    
-    def update(self, restaurant):
-        self.restaurants[restaurant.id] = restaurant
-        return True
 
-@pytest.fixture
-def restaurant_service():
-    return RestaurantService(MockRepo())
+# --- Get restaurant tests ---
 
-# --- FR3: Publishing logic ---
+def test_get_restaurant_by_id_success(service, mock_repo, restaurant):
+    """
+    Equivalience partitioning
+    Test getting a restaurant with a valid id
+    """
+    mock_repo.load_all.return_value = [restaurant]
 
-def test_publish_restaurant_success(restaurant_service, restaurant):
-    # Positive Functional test: Publish when all required fields are filled
-    # Complete partial conftest
-    restaurant.address = "123 Test Ave"
-    restaurant.phone = "555-555-5555"
-    restaurant.open_time = 900
-    restaurant.close_time = 2200
-    restaurant.menu = ["Mock item"]
+    result, status = service.get_restaurant_by_id(restaurant.id)
 
-    restaurant_service.restaurant_repository.restaurants[restaurant.id] = restaurant
+    assert status == 200
+    assert result.id == restaurant.id
+    assert result.name == "John's Diner"
 
-    result = restaurant_service.publish_restaurant(restaurant.id)
+def test_get_restaurant_by_id_not_found(service, mock_repo):
+    """
+    Equivalience partitioning
+    Test getting a restaurant without a valid id
+    """
+    mock_repo.load_all.return_value = []
 
-    assert result["success"] is True
-    assert restaurant.is_published is True
+    result, status = service.get_restaurant_by_id(999)
 
-def test_publish_restaurant_fails_missing_info(restaurant_service, restaurant):
-    # Edge test: Throw error if incomplete
-    restaurant_service.restaurant_repository.restaurants[restaurant.id] = restaurant
-    result = restaurant_service.publish_restaurant(restaurant.id)
+    assert status == 404
+    assert result is None
 
-    assert result["success"] is False
-    assert "is required" in result["error"]
-    assert restaurant.is_published is False
-
-def test_admin_customer_perspective(restaurant_service, restaurant):
-    # Positive Functional Test: Tests that different perspectives can be used
-    # Customer perspective should not see unpublished restaurant
-    restaurant.address = "123 Test Ave"
-    restaurant.phone = "555-555-5555"
-    restaurant.open_time = 900
-    restaurant.close_time = 2200
-    restaurant_service.restaurant_repository.restaurants[restaurant.id] = restaurant
-
-    # Ensure customer cant see restaurant before it is published
-    assert restaurant.get_view("Customer") is None
-
-    # Publish
-    restaurant_service.publish_restaurant(restaurant.id)
-
-    # Check to see if customer can view it
-    view = restaurant.get_view("Customer")
-    assert view is not None
-    assert view["name"] == "John's Diner"
-
-# --- FR1: Registration and roles
-
-def test_create_restaurant_as_owner(restaurant_service, owner):
-    # Positive functionality test: Owner can create a restaurant
-    data = {"name": "New Spot", "location": "789 Road"}
-    result = restaurant_service.register_restaurant(owner, data)
-
-    assert result["success"] is True
-    assert result["restaurant_id"] == "mock_id_123"
-
-def test_create_restaurant_as_customer(restaurant_service):
-    # Edge case: A customer should not be able to create a restaurant
-    customer = Customer(
-        id=2,
-        username="Newbie",
-        email="newbie@example.com",
-        password_hash="hashed_pw"
+def test_get_all_published_success(service, mock_repo):
+    """
+    Equivalence Partitioning/ Mocking
+    Ensures only published restaurants with nonsensitive data is returned
+    """
+    res_published = Restaurant(
+        id=1, 
+        name="Published Diner",
+        menu=["Burgers"],
+        is_published=True, 
+        owner_id="owner_1"
     )
-    data = {"name": "Fake place", "location": "None"}
+    res_draft = Restaurant(
+        id=2, 
+        name="Draft Cafe",
+        menu=["Tea"], 
+        is_published=False, 
+        owner_id="owner_2"
+    )
+    
+    mock_repo.load_all.return_value = [res_published, res_draft]
 
-    result = restaurant_service.register_restaurant(customer, data)
+    results = service.get_all_published()
 
-    assert result["success"] == False
-    assert "unauthorized" in result["error"]
+    assert len(results) == 1
+    assert results[0]["name"] == "Published Diner"
 
-def test_service_publish_flow_success(restaurant_service, restaurant):
-    # Positive Functional Test: Tests that user can store before publishing
-    restaurant.address = "123 Test Ave"
-    restaurant.phone = "555-555-5555"
-    restaurant.open_time = 900
-    restaurant.close_time = 2200
-    restaurant_service.restaurant_repository.restaurants[restaurant.id] = restaurant
+    assert "owner_id" not in results[0]
+    assert "name" in results[0]
 
-    result = restaurant_service.publish_restaurant(restaurant.id)
 
-    assert result["success"] is True
+def test_get_all_published_empty(service, mock_repo):
+    """
+    Boundary Value Analysis
+    Ensures that if no restaurants are published, an empty list is returned
+    """
+    res_draft = Restaurant(
+        id=1,
+        name="Testaurant",
+        menu=["Burger"],
+        owner_id="owner_3",
+        is_published=False)
+    mock_repo.load_all.return_value = [res_draft]
+
+    results = service.get_all_published()
+
+    assert isinstance(results, list)
+    assert len(results) == 0
+
+
+# --- Assign owner to restaurant ---
+
+def test_assign_owner_success(service, mock_repo, restaurant):
+    """
+    Equivalence Partitioning
+    Ensures a owner can be assigned to a restaurant
+    """
+
+    mock_repo.load_all.return_value = [restaurant]
+    new_owner_id = 505
+
+    response, status = service.assign_owner_to_restaurant(restaurant.id, new_owner_id)
+
+    assert status == 200
+    assert response["message"] == "Owner assigned"
+    assert response["restaurant_id"] == restaurant.id
+
+    mock_repo.save_all.assert_called_once()
+
+    assert restaurant.owner_id == str(new_owner_id)
+
+
+def test_assign_owner_not_found(service, mock_repo):
+    """
+    Exception handling
+    Ensure the proper error returns when we try to assign a restaurant
+    to a nonexistent owner
+    """
+    mock_repo.load_all.return_value = []
+    
+    response, status = service.assign_owner_to_restaurant(1, 101)
+    
+    assert status == 404
+    assert response["error"] == "Restaurant not found"
+
+def test_assign_owner_value_error_handling(service, mock_repo, restaurant):
+    """
+    Fault injection
+    Ensure the proper error is thrown during owner assignment
+    """
+    rest_id = restaurant.id
+    mock_repo.load_all.return_value = [restaurant]
+
+    mock_repo.save_all.side_effect = ValueError("Database constraint violated")
+    response, status = service.assign_owner_to_restaurant(rest_id, 101)
+
+    assert status == 400
+    assert "Database constraint violated" in response["error"]
+
+# --- Publishing ---
+
+def test_publish_restaurant_success(service, mock_repo, restaurant):
+    """
+    Functional test
+    Ensure a restaurant can be published 
+    """
+    restaurant.phone = "250-555-0123"
+    restaurant.latitude = 49.88
+    restaurant.longitude = -119.49
+    restaurant.is_published = False
+    
+    mock_repo.load_all.return_value = [restaurant]
+
+    response, status = service.publish_restaurant(restaurant.id)
+
+    assert status == 200
+    assert "is now published" in response["message"]
+
     assert restaurant.is_published is True
 
-def test_publish_fails_without_menu(restaurant_service, restaurant):
-    # Negative Edge Case: Cannot publish without menu
-    restaurant.address = "123 Test Ave"
-    restaurant.phone = "555-555-5555"
-    # Clear menu
-    restaurant.menu = []
-    restaurant_service.restaurant_repository.restaurants[restaurant.id] = restaurant
+    mock_repo.save_all.assert_called_once()
 
-    result = restaurant_service.publish_restaurant(restaurant.id)
+def test_publish_restaurant_missing_data(service, mock_repo, restaurant):
+    """
+    Equivalence Partitioning
+    Testing the minimum requirements (phone/coords)
+    for the 'Published' state.
+    """
+    restaurant.phone = ""
+    mock_repo.load_all.return_value = [restaurant]
 
-    assert result["success"] is False
-    assert "menu cannot be empty" in result["error"]
+    response, status = service.publish_restaurant(restaurant.id)
+
+    assert status == 400
+    assert "Missing phone" in response["error"]
+
+# --- View filtering ---
+
+def test_get_filtered_view_forbidden_for_customer(service, mock_repo, restaurant):
+    """
+    Exception Handling
+    Ensure a customer cannot access a restaurant that isnt published
+    """
+    restaurant.is_published = False
+    mock_repo.load_all.return_value = [restaurant]
+
+    response, status = service.get_filtered_view(restaurant.id, "customer")
+
+    assert status == 403
+    assert response["error"] == "Restaurant unavailable"
+
+def test_get_filtered_view_strips_sensitive_data(service, mock_repo, restaurant):
+    """
+    Equivalence Partitioning
+    Ensures that the customer only sees public information
+    Should not see owner id
+    """
+    restaurant.is_published = True
+    restaurant.owner_id = "secret_123"
+    mock_repo.load_all.return_value = [restaurant]
+
+    response, status = service.get_filtered_view(restaurant.id, "customer")
+
+    assert status == 200
+    assert "owner_id" not in response
+    assert response["id"] == restaurant.id

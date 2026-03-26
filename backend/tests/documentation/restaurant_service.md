@@ -1,17 +1,19 @@
-Test documentation for restaurant service
+Resaturant Service Test Documentation
+<img width="614" height="125" alt="Screenshot 2026-03-25 at 2 36 28 PM" src="https://github.com/user-attachments/assets/38dd5f8b-d4bd-403b-bbaa-81bd2cc40be1" />
 
-<img width="563" height="126" alt="Screenshot 2026-03-11 at 6 18 00 PM" src="https://github.com/user-attachments/assets/b002050c-1caf-4928-8e10-fae6b6798e76" />
 
-There is a positive functional test to ensure a restaurant can be published when all information is inputted accurately and correctly.
+There are two get by id methods to ensure success and error are both handled correctly. The successful one uses equivalence partitioning to test and returns a successful code in status.
+The id not found also uses equivalence partitioning and returns a 404 error when the id is invalid.
 
-Corresponding tests have been made to test for missing info error.
+There are two get all methods to ensure success and empty list are both handled correctly. The successful one uses Equivalence partitioning and mocking to get all published restaurants with nonsensitive data.
+The get all published empty method is a boundary test to ensure an empty list is returned if no restaurants are published.
 
-Another test has been made to test that an admin can view an unpublished restaurant and a customer cannot
+There are three tests for owner assignment to restaurants. The successful case uses equivalence partitioning and ensures a owner can be assigned to a restaurant.
+There is an exception handling test that tries to assign a nonexistent owner to a restaurant.
+There is an exceptiopn handling and fault injection test to ensure the proper error is thrown when the database has an error.
 
-We have a positive functionality test to ensure restaurant owners can create a restaurant.
-The edge case ensures customers cannot create restaurants.
+There is publishing tests to ensure it can be published successfully,
+and an equivalence partitioining test to ensure the pripoer error is thrown if missing required data.
 
-Another test ensures that a restaurant can be saved before publishing
-
-One last edge case checks that a restaurant cannot be published without a menu
-
+There are two tests for filtering view, one that uses exception handling to ensure a customer cannot view an unpublished restaurant.
+Another test ensures customers cannot view sensitive data

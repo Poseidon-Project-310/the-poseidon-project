@@ -1,57 +1,109 @@
 # backend/services/restaurant_service.py
-from backend.models.user.restaurant_owner_model import RestaurantOwner
-from backend.models.user.admin import Admin
-from backend.models.restaurant.restaurant_model import Restaurant
+from typing import List, Optional, Tuple, Dict
+import math
+from backend.schemas.restaurant_schema import Restaurant
 
 
 class RestaurantService:
-    def __init__(self, restaurant_repository):
-        self.restaurant_repository = restaurant_repository
-
-    def register_restaurant(self, user, data: dict):
+    def __init__(self, restaurant_repo):
+        self.restaurant_repo = restaurant_repo
+    
+    def get_restaurant_by_id(self, restaurant_id: str) -> Tuple[Optional[Restaurant], int]:
         """
-        Feat2-FR1: Storing Information
-        Checks if user is an admin or owner
+        Returns a single restaurant
+        Matches 200 OK or 404 Not Found
         """
-        user_type = user.__class__.__name__
-        # Check if user is an admin or owner
-        if user_type not in ["RestaurantOwner", "Admin"]:
-            return {"success": False, "error": "unauthorized"}
+        restaurants = self.restaurant_repo.load_all()
+        target = next((r for r in restaurants if r.id == restaurant_id), None)
         
+        if not target:
+            return None, 404
+        return target, 200
+    
+    def get_all_published(self) -> List[Dict]:
+        """
+        Returns a list of all published restaurants and remove sensitive data
+        """
+        restaurants = self.restaurant_repo.load_all()
+        return [
+            r.model_dump(by_alias=False, exclude={"owner_id"}) 
+            for r in restaurants if r.is_published
+        ]
+
+    def assign_owner_to_restaurant(self, restaurant_id: str, owner_id: str) -> Tuple[Dict, int]:
+        """
+        Assigns user as owner to pre-existing restaurant
+        """
+        restaurants = self.restaurant_repo.load_all()
+        target = next((r for r in restaurants if r.get_id() == restaurant_id), None)
+
+        if not target:
+            return {"error": "Restaurant not found"}, 404
+
         try:
-            new_restaurant = Restaurant(
-                name=data.get("name"),
-                owner=user,
-                open_time=data.get("open_time", 900),
-                close_time=data.get("close_time", 2100),
-                menu=[]
+            target.owner_id = str(owner_id)
+            self.restaurant_repo.save_all(restaurants)
+            return {"message": "Owner assigned", "restaurant_id": restaurant_id}, 200
+        except ValueError as e:
+            return {"error": str(e)}, 400
 
-            )
-            new_id = self.restaurant_repository.create_restaurant(new_restaurant)
-            return {"success": True, "restaurant_id": new_id}
-        
-        # Handle potential errors
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-        
-    def publish_restaurant(self, restaurant_id):
-        """
-        Feat2-FR3: Correct and accurate information
-        """
-        restaurant = self.restaurant_repository.get_by_id(restaurant_id)
 
-        if not restaurant:
-            return {"success": False, "error": "Restaurant not found"}
-        
-        if not restaurant.address or not restaurant.phone:
-            return {"success": False, "error": "address and phone is required"}
-        
-        if not restaurant.menu:
-            return {"success": False, "error": "menu cannot be empty"}
-        
+    def update_restaurant_details(self, restaurant_id: str, update_data: dict) -> Tuple[Dict, int]:
+        """
+        Feat2-FR3: Update restaurant info
+        """
+        restaurants = self.restaurant_repo.load_all()
+        target = next((r for r in restaurants if r.get_id() == restaurant_id), None)
+
+        if not target:
+            return {"error": "Not Found"}, 404
+
         try:
-            restaurant.is_published = True
-            self.restaurant_repository.update(restaurant)
-            return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+            for key, value in update_data.items():
+                if hasattr(target, key):
+                    setattr(target, key, value)
+        
+            self.restaurant_repo.save_all(restaurants)
+            return {"message": "Updated successfully"}, 200
+        except ValueError as e:
+            return {"error": str(e)}, 400
+
+    def publish_restaurant(self, restaurant_id: str) -> Tuple[Dict, int]:
+        """
+        Feat2-FR3:
+        Ensure valid phone/coords before publishing
+        """
+        restaurants = self.restaurant_repo.load_all()
+        target = next((r for r in restaurants if str(r.id) == str(restaurant_id)), None)
+
+        if not target:
+            return {"error": "Not Found"}, 404
+
+        if not target.phone or target.latitude == 0.0 or target.longitude == 0.0:
+            return {"error": "Cannot publish: Missing phone or valid coordinates"}, 400
+
+        target.is_published = True
+        self.restaurant_repo.save_all(restaurants)
+        return {"message": "Restaurant is now published"}, 200
+
+    def get_filtered_view(self, restaurant_id: str, user_role: str) -> Tuple[Optional[Dict], int]:
+        """
+        Feat2-FR4
+        Throws a forbidden error if customer tries to view an unpublished restaurant
+        """
+        restaurants = self.restaurant_repo.load_all()
+        target = next((r for r in restaurants if r.id == restaurant_id), None)
+
+        if not target:
+            return None, 404
+
+        data = target.model_dump(by_alias=False)
+
+        if user_role == "customer":
+            if not target.is_published:
+                return {"error": "Restaurant unavailable"}, 403
+            # Strip sensitive data
+            data.pop("owner_id", None)
+            # data.pop("internal_revenue", None) # Example
+            
+        return data, 200
