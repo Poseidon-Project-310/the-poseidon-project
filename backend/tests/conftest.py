@@ -81,7 +81,7 @@ def service(mock_repo):
 def search_service(mock_restaurant_repo, mock_item_repo):
     return SearchService(
         restaurant_repo=mock_restaurant_repo,
-        item_repo=mock_item_repo
+        item_repo=mock_item_repo)
       
 
 # old fixtures
