@@ -6,13 +6,21 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 from backend.models.user.user_schema import User
+=======
+from backend.schemas.user_schema import User
+from backend.schemas.items_schema import MenuItem
+>>>>>>> order_servicev2
 from backend.schemas.restaurant_schema import Restaurant
 from backend.schemas.items_schema import MenuItem as MenuItemSchema
 from backend.services.search_service import SearchService
 
+<<<<<<< HEAD
 >>>>>>> origin/m3-demo
+=======
+>>>>>>> order_servicev2
 
 
 ROOT = Path(__file__).resolve().parents[1]

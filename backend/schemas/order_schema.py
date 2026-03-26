@@ -42,13 +42,17 @@ class Order(BaseModel):
 class OrderCreate(BaseModel):
     customer_id: str
     restaurant_id: int
-    items: List[OrderItemCreate]
+    items: List[OrderItem]
     delivery_address: Optional[str] = None
     delivery_latitude: float
     delivery_longitude: float
     delivery_postal_code: str
     delivery_instructions: Optional[str] = None
 
+<<<<<<< HEAD
+=======
+# Schema for updating an Order. Allows modification of everything from OrderCreate except id's or items. Also allows updating status.
+>>>>>>> order_servicev2
 class OrderUpdate(BaseModel):
     status: Optional[OrderStatus] = None
     delivery_address: Optional[str] = None
