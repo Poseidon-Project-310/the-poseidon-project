@@ -72,5 +72,5 @@ def raw_menu_item_data():
 
 @pytest.fixture
 def sample_menu_item(raw_menu_item_data):
-    return MenuItemSchema(**raw_menu_item_data)
+    return MenuItem(**raw_menu_item_data)
 
