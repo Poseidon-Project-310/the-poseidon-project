@@ -115,6 +115,22 @@ def test_update_item_availability_not_found(menu_service, mock_repo, restaurant)
     assert status == 404
     assert "not found" in response["error"]
 
+def test_update_item_availability_success(menu_service, mock_repo, restaurant):
+    """
+    Equivalence Partitioning
+    Ensure the toggle correctly returns the new status when the item exists
+    """
+    mock_repo.get_by_id.return_value = restaurant
+    mock_repo.update_menu_item_availability.return_value = True
+
+    response, status = menu_service.update_item_availability(
+        restaurant.owner_id, str(restaurant.id), "item-123", False
+    )
+    
+    assert status == 200
+    assert response["status"] is False
+    mock_repo.update_menu_item_availability.assert_called_with(str(restaurant.id), "item-123", False)
+
 # --- Remove Menu Item ---
 
 def test_remove_menu_item_success(menu_service, mock_repo, restaurant):
