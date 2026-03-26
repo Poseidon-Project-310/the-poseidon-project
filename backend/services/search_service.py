@@ -7,7 +7,7 @@ class SearchService:
         """
         Connects to the repository
         """
-        self.repo = restaurant_repo
+        self.restaurant_repo = restaurant_repo
         self.item_repo = item_repo
 
     def search_by_keyword(self, keyword: str) -> List[Dict]:

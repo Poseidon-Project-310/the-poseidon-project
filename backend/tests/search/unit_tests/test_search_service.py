@@ -4,67 +4,92 @@ from unittest.mock import MagicMock
 from backend.services.search_service import SearchService
 
 
-@pytest.fixture
-def mock_repo():
-    return MagicMock()
-
-
-@pytest.fixture
-def service(mock_repo):
-    return SearchService(mock_repo)
-
-# --- Functional Tests ---
-
-
-def test_search_applies_cuisine_filter(service, mock_repo):
-    # Feat3-FR2:
-    # Functional tests applies cuisine filters
-    mock_repo.search_restaurants_and_menu_items.return_value = [
-        {"name": "Pizza Hut", "cuisine": "Italian"},
-        {"name": "Dominoes", "cuisine": "American"}
-    ]
-
-    results = service.search("Pizza", cuisine="Italian")
-
-    assert len(results) == 1
-    assert results[0]["name"] == "Pizza Hut"
-
-
-def test_search_applies_rating_filter(service, mock_repo):
+def test_search_returns_empty_for_short_query(search_service):
     # Feat3-FR2
-    # Functional test applies rating filters
-    mock_repo.search_restaurants_and_menu_items.return_value = [
-        {"name": "Starbucks", "rating": 4.5},
-        {"name": "Dunkin", "rating": 3.0}
-    ]
-
-    results = service.search("Coffee", min_rating=4.0)
-
-    assert len(results) == 1
-    assert results[0]["name"] == "Starbucks"
-
-# --- Edge Case Tests ---
-
-
-def test_search_returns_empty_for_short_query(service, mock_repo):
-    # Feat3-FR2
-    # Edge case test: If a search is only one letter and they
+    # Boundary value analysis: If a search is only one letter and they
     # Try to search, nothing will show up to save resources
-    results = service.search("a")
+    assert search_service.search_by_keyword("") == []
+    assert search_service.search_by_keyword("a") == []
+    assert search_service.search_by_keyword("  ") == []
 
-    assert results == []
+def test_search_by_keyword_success(search_service, mock_restaurant_repo, mock_item_repo):
+    """
+    Functional Logic
+    Tests that a valid keyword returns matching items from published restaurants.
+    """
+    mock_res = MagicMock()
+    mock_res.id = 10
+    mock_res.is_published = True
+    mock_restaurant_repo.load_all.return_value = [mock_res]
 
-    mock_repo.search_restaurants_and_menu_items.assert_not_called()
+    mock_item = MagicMock()
+    mock_item.restaurant_id = 10
+    mock_item.name = "Beef Pie"
+    mock_item.tags = ["savory"]
+    mock_item.model_dump.return_value = {"item_name": "Beef Pie", "tags": ["savory"]}
+    
+    mock_item_repo.load_all.return_value = [mock_item]
+
+    results = search_service.search_by_keyword("beef")
+
+    assert len(results) == 1
+    assert results[0]["item_name"] == "Beef Pie"
 
 
-def test_search_handles_missing_rating_key(service, mock_repo):
-    # Feat3-FR2
-    # Edge case test: If a restaurnat doesn't have a rating,
-    # it defaults to 0 so that it does not crash
-    mock_repo.search_restaurants_and_menu_items.return_value = [
-        {"name": "New Place"}
-    ]
+def test_search_filters_unpublished_restaurants(search_service, mock_restaurant_repo, mock_item_repo):
+    """
+    Equivalence Partitioning
+    Items should NOT appear in search if their restaurant is not published.
+    """
+    mock_res = MagicMock(id=10, is_published=False)
+    mock_restaurant_repo.load_all.return_value = [mock_res]
 
-    results = service.search("New", min_rating=1.0)
+    mock_item = MagicMock(restaurant_id=10, name="Hidden Pizza", tags=[])
+    mock_item_repo.load_all.return_value = [mock_item]
+
+    results = search_service.search_by_keyword("pizza")
 
     assert len(results) == 0
+
+
+def test_search_by_tag_match(search_service, mock_restaurant_repo, mock_item_repo):
+    """
+    Functional Test
+    Tests that searching for a tag (e.g., 'vegan') returns the item.
+    """
+    mock_res = MagicMock(id=1, is_published=True)
+    mock_restaurant_repo.load_all.return_value = [mock_res]
+
+    mock_item = MagicMock()
+    mock_item.restaurant_id = 1
+    mock_item.name = "Salad"
+    mock_item.tags = ["vegan", "healthy"]
+    mock_item.model_dump.return_value = {"item_name": "Salad", "tags": ["vegan"]}
+    
+    mock_item_repo.load_all.return_value = [mock_item]
+
+    results = search_service.search_by_keyword("vegan")
+
+    assert len(results) == 1
+    assert "Salad" in results[0]["item_name"]
+
+
+def test_get_homepage_featured_limit(search_service, mock_restaurant_repo, mock_item_repo):
+    """
+    Functional test
+    Ensures only the first 5 published items are returned.
+    """
+    mock_res = MagicMock(id=1, is_published=True)
+    mock_restaurant_repo.load_all.return_value = [mock_res]
+
+    items = []
+    for i in range(10):
+        item = MagicMock(restaurant_id=1)
+        item.model_dump.return_value = {"id": i}
+        items.append(item)
+    
+    mock_item_repo.load_all.return_value = items
+
+    featured = search_service.get_homepage_featured()
+
+    assert len(featured) == 5
