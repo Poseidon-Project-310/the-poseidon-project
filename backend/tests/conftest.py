@@ -52,6 +52,7 @@ def restaurant():
             is_published=False,
     )
 
+
 @pytest.fixture
 def mock_repo():
     return MagicMock()
@@ -61,7 +62,7 @@ def service(mock_repo):
     from backend.services.restaurant_service import RestaurantService
     return RestaurantService(mock_repo)
 
-# old fixtures
+
 
 @pytest.fixture
 def restaurant():
