@@ -56,6 +56,17 @@ def restaurant_service(mock_restaurant_repo):
     from backend.services.restaurant_service import RestaurantService
     return RestaurantService(mock_restaurant_repo)
 
+@pytest.fixture
+def mock_search_service(monkeypatch):
+
+    from unittest.mock import MagicMock
+    from backend.services.search_service import SearchService
+
+    mock = MagicMock(spec=SearchService)
+
+    monkeypatch.setattr("backend.routes.search_routes.service", mock)
+
+    return mock
 
 @pytest.fixture
 def search_service(mock_restaurant_repo, mock_item_repo):
