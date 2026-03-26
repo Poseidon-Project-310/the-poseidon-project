@@ -3,7 +3,7 @@
 import json
 import os
 from typing import Optional, List, Dict
-from backend.models.user.user_model import User
+from backend.models.user.user_schema import User
 
 
 DATA_FILE = os.path.join(
