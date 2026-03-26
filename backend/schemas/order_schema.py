@@ -48,7 +48,7 @@ class Order(BaseModel):
 class OrderCreate(BaseModel):
     customer_id: str
     restaurant_id: int
-    items: List[OrderItemCreate]
+    items: List[OrderItem]
     delivery_address: Optional[str] = None
     delivery_latitude: float
     delivery_longitude: float
