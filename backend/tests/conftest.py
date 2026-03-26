@@ -3,6 +3,7 @@ import pytest
 from pathlib import Path
 from decimal import Decimal
 from uuid import uuid4
+from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 from backend.models.user.user_schema import User
 from backend.schemas.items_schema import MenuItem
@@ -16,6 +17,15 @@ from backend.services.search_service import SearchService
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+
+@pytest.fixture
+def client():
+    """
+    Creates a FastAPI TestClient for integration testing.
+    Make sure your 'app' is defined in backend/main.py.
+    """
+    from backend.main import app
+    return TestClient(app)
 
 @pytest.fixture
 def owner():
