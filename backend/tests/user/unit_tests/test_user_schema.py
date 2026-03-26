@@ -1,6 +1,9 @@
+# backend/tests/user/unit_tests/test_user_schema.py
 import pytest
 
-from backend.models.user.user_schema import User
+from backend.schemas.user_schema import User
+from backend.schemas.cart_schema import Cart
+from backend.schemas.order_schema import OrderItem
 
 
 def test_user_valid_creation():
@@ -22,13 +25,15 @@ def test_user_valid_creation():
     assert user.postal_code == ""
     assert user.latitude is None
     assert user.longitude is None
-    assert user.cart == []
+    assert isinstance(user.cart, Cart)
     assert user.orders == []
     assert user.owned_restaurants_id == []
 
 
 def test_user_valid_creation_with_all_fields():
     """Create a valid user when all fields are provided."""
+    test_cart = Cart(items=[OrderItem(menu_item_id=1, quantity=2, price_at_time=10.0)])
+
     user = User(
         id="2",
         username="owner1",
@@ -40,7 +45,7 @@ def test_user_valid_creation_with_all_fields():
         postal_code="V1V1V1",
         latitude=64.14,
         longitude=-21.94,
-        cart=["item1"],
+        cart=test_cart,
         orders=["order1"],
         owned_restaurants_id=["rest1", "rest2"],
     )
@@ -51,7 +56,8 @@ def test_user_valid_creation_with_all_fields():
     assert user.postal_code == "V1V1V1"
     assert user.latitude == 64.14
     assert user.longitude == -21.94
-    assert user.cart == ["item1"]
+    assert user.cart.items[0].menu_item_id == 1
+    assert user.cart.items[0].quantity == 2
     assert user.orders == ["order1"]
     assert user.owned_restaurants_id == ["rest1", "rest2"]
 
@@ -167,7 +173,6 @@ def test_user_valid_numeric_coordinates():
 @pytest.mark.parametrize(
     "field_name,value",
     [
-        ("cart", "notalist"),
         ("orders", "notalist"),
         ("owned_restaurants_id", "bakeryone"),
     ],
@@ -193,12 +198,13 @@ def test_user_valid_empty_lists():
         username="emptylists",
         email="empty@gmail.com",
         password_hash="hashed_password",
-        cart=[],
+        cart=Cart(items=[]),
         orders=[],
         owned_restaurants_id=[],
     )
 
-    assert user.cart == []
+    assert isinstance(user.cart, Cart)
+    assert len(user.cart.items) == 0
     assert user.orders == []
     assert user.owned_restaurants_id == []
 

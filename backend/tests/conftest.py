@@ -4,6 +4,8 @@ from decimal import Decimal
 from uuid import uuid4
 from unittest.mock import MagicMock
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))

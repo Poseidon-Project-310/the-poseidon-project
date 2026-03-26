@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import List, Optional
+from backend.schemas.cart_schema import Cart
 
 """Represents a user and validates required user data."""
 
@@ -19,7 +20,7 @@ class User:
     postal_code: str = ""
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    cart: List[str] = field(default_factory=list)
+    cart: Cart = Cart()
     orders: List[str] = field(default_factory=list)
     owned_restaurants_id: List[str] = field(default_factory=list)
 
@@ -60,7 +61,6 @@ class User:
             raise ValueError("longitude must be a number or None")
 
         list_fields = {
-            "cart": self.cart,
             "orders": self.orders,
             "owned_restaurants_id": self.owned_restaurants_id,
         }
