@@ -5,16 +5,18 @@ from backend.services.search_service import SearchService
 
 
 def test_search_returns_empty_for_short_query(search_service):
-    # Feat3-FR2
-    # Boundary value analysis: If a search is only one letter and they
-    # Try to search, nothing will show up to save resources
+    """
+    Feat3-FR2
+    Boundary value analysis: If a search is only one letter and they
+    Try to search, nothing will show up to save resources
+    """
     assert search_service.search_by_keyword("") == []
     assert search_service.search_by_keyword("a") == []
     assert search_service.search_by_keyword("  ") == []
 
 def test_search_by_keyword_success(search_service, mock_restaurant_repo, mock_item_repo):
     """
-    Functional Logic
+    Functional Logic/ Mocking
     Tests that a valid keyword returns matching items from published restaurants.
     """
     mock_res = MagicMock()
@@ -73,10 +75,11 @@ def test_search_by_tag_match(search_service, mock_restaurant_repo, mock_item_rep
     assert len(results) == 1
     assert "Salad" in results[0]["item_name"]
 
+# --- Feature 3 - FR 3 ---
 
 def test_get_homepage_featured_limit(search_service, mock_restaurant_repo, mock_item_repo):
     """
-    Functional test
+    Boundary Value Analysis
     Ensures only the first 5 published items are returned.
     """
     mock_res = MagicMock(id=1, is_published=True)
@@ -96,7 +99,8 @@ def test_get_homepage_featured_limit(search_service, mock_restaurant_repo, mock_
 
 def test_browse_homepage_filters_unpublished(search_service, mock_restaurant_repo):
     """
-    Requirement Test: Homepage list only contains published restaurants.
+    Equivalence Partitioning
+    Homepage list only contains published restaurants.
     """
     mock_res_active = MagicMock(id=1, is_published=True)
     mock_res_hidden = MagicMock(id=2, is_published=False)
@@ -112,7 +116,7 @@ def test_browse_homepage_filters_unpublished(search_service, mock_restaurant_rep
 
 def test_get_restaurant_details_success(search_service, mock_restaurant_repo, mock_item_repo):
     """
-    Functional Test:
+    Mocking/ Functional Test
     Fetches a restaurant and successfully injects its menu items
     """
 
@@ -134,7 +138,8 @@ def test_get_restaurant_details_success(search_service, mock_restaurant_repo, mo
 
 def test_get_restaurant_details_not_found_or_hidden(search_service, mock_restaurant_repo):
     """
-    Security Test: Returns None for non-existent or unpublished IDs.
+    Exception Handling/ Fault injection
+    Returns None for non-existent or unpublished IDs.
     """
     mock_res = MagicMock(id=50, is_published=False)
     mock_restaurant_repo.load_all.return_value = [mock_res]
