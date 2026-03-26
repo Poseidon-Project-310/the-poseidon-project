@@ -68,3 +68,10 @@ class User:
         for field_name, value in list_fields.items():
             if not isinstance(value, list):
                 raise ValueError(f"{field_name} must be a list")
+            
+    @staticmethod
+    def hash_password(password: str) -> str:
+        """Temporary hashing method (to be moved to service layer)."""
+        if not isinstance(password, str) or not password.strip():
+            raise ValueError("password must be a non-empty string")
+        return f"hashed_{password}"
