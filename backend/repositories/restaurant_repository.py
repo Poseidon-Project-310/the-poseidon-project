@@ -39,7 +39,7 @@ class RestaurantRepository:
             print(f"DEBUG: Error occurred: {e}")
             return []
 
-"""
+    """
     def load_all(self) -> List[Restaurant]:
         """"""
         Read JSON file and return list of Restaurant objects
@@ -57,7 +57,7 @@ class RestaurantRepository:
                 return [Restaurant(**item) for item in data]
         except (json.JSONDecodeError, FileNotFoundError):
             return []
-"""
+        """
     def save_all(self, restaurants: List[Restaurant]) -> bool:
         """
         Writes list of objects back to JSON
