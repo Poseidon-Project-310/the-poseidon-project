@@ -16,6 +16,7 @@ class RestaurantRepository:
             self._file_path = Path(__file__).parent.parent / "data" / "restaurants.json"
         
         if not self._file_path.parent.exists():
+            print(f"DEBUG: Looking for file at: {self._file_path.absolute()}")
             with open(self._file_path, 'w') as f:
                 f.write("[]")
 
