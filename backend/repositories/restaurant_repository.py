@@ -16,7 +16,8 @@ class RestaurantRepository:
             self._file_path = Path(__file__).parent.parent / "data" / "restaurants.json"
         
         if not self._file_path.parent.exists():
-            self._file_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self._file_path, 'w') as f:
+                f.write("[]")
 
     
     def load_all(self) -> List[Restaurant]:
