@@ -32,7 +32,7 @@ def test_get_search_empty_query(client, mock_search_service):
 
 def test_get_nearby_restaurants_success(client, mock_search_service):
     """
-    Functional Test / Integration
+    Functional Test
     Verifies that passing lat/lon returns a sorted list of restaurants from the service.
     """
     mock_nearby = [
