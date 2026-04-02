@@ -198,7 +198,6 @@ def test_add_menu_item_invalid_uuid_format(menu_service, mock_item_repo, restaur
     )
 
     assert status == 400
-    # Error message comes from Pydantic's internal UUID parsing failure
     assert "valid UUID" in response["error"]
 
 def test_add_menu_item_tags_standardization(menu_service, mock_item_repo, restaurant, raw_menu_item_data):
@@ -212,8 +211,7 @@ def test_add_menu_item_tags_standardization(menu_service, mock_item_repo, restau
     menu_service.add_menu_item(
         restaurant.owner_id, str(restaurant.id), raw_menu_item_data
     )
-    
-    # Extract the schema object passed to the repository
+
     args, _ = mock_item_repo.add_menu_item.call_args
     passed_schema = args[1]
     
