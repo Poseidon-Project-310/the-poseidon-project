@@ -24,6 +24,13 @@ def get_search(q: Optional[str] = None):
         return []
     return service.search_by_keyword(q)
 
+@router.get("/nearby", response_model=List[Dict])
+def get_nearby(lat: float, lon: float):
+    """
+    GET: Returns restaurants sorted by distance from the provided lat/lon.
+    """
+    return service.get_nearby_restaurants(lat, lon)
+
 @router.get("/homepage", response_model=List[Dict])
 def get_homepage():
     """
