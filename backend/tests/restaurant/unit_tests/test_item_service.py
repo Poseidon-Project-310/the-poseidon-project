@@ -188,7 +188,7 @@ def test_add_menu_item_empty_name(menu_service, mock_item_repo, restaurant, raw_
 def test_add_menu_item_invalid_uuid_format(menu_service, mock_item_repo, restaurant, raw_menu_item_data):
     """
     Validation test
-    Tests that the service catches Pydantic parsing errors (like bad UUIDs) and returns 400
+    catches bad UUIDS and returns 400
     """
     mock_item_repo.get_by_id.return_value = restaurant
     raw_menu_item_data["id"] = "not-a-valid-uuid"
@@ -203,7 +203,7 @@ def test_add_menu_item_invalid_uuid_format(menu_service, mock_item_repo, restaur
 def test_add_menu_item_tags_standardization(menu_service, mock_item_repo, restaurant, raw_menu_item_data):
     """
     Functional logic
-    Ensures tags are cleaned (lowercase, stripped, no duplicates) before being saved
+    Ensures tags are all lowercase, stripped, no duplicates before being saved
     """
     mock_item_repo.get_by_id.return_value = restaurant
     raw_menu_item_data["tags"] = [" Pizza ", "pizza", "  HOT  "]
