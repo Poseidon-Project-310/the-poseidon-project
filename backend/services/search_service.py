@@ -1,4 +1,5 @@
 # backend/services/search_service.py
+import math
 from typing import List, Dict, Optional
 
 
@@ -10,13 +11,32 @@ class SearchService:
         self.restaurant_repo = restaurant_repo
         self.item_repo = item_repo
 
-    def search_by_keyword(self, keyword: str) -> List[Dict]:
+    def _paginate(self, data: List[Dict], page: int, limit: int) -> Dict:
+        """
+        Feat3-FR5: Pagination
+        Implements pagination logic for search results.
+        """
+        total_results = len(data)
+        start = (page - 1) * limit
+        end = start + limit
+        
+        return {
+            "items": data[start:end],
+            "total_count": total_results,
+            "page": page,
+            "per_page": limit,
+            "has_next": end < total_results,
+            "total_pages": math.ceil(total_results / limit) if total_results > 0 else 1
+        }
+
+    def search_by_keyword(self, keyword: str, page: int = 1, limit: int = 20) -> List[Dict]:
         """
         Feat3-FR2: Searching
         Combines keyword matching with specific attribute filters.
+        Returns paginated dictionary
         """
         if not keyword or len(keyword.strip()) < 2:
-            return []
+            return self._paginate([], page, limit)
 
         search_term = keyword.lower().strip()
 
@@ -25,20 +45,13 @@ class SearchService:
             if r.is_published
         }
 
-        all_items = self.item_repo.load_all()
+        all_matches = [
+            item.model_dump() for item in self.item_repo.load_all()
+            if str(item.restaurant_id) in published_restaurant_ids and 
+            (search_term in item.name.lower() or any(search_term in t.lower() for t in item.tags))
+        ]
 
-        results = []
-        for item in all_items:
-            if str(item.restaurant_id) not in published_restaurant_ids:
-                continue
-
-            name_match = search_term in item.name.lower()
-            tag_match = any(search_term in tag.lower() for tag in item.tags)
-
-            if name_match or tag_match:
-                results.append(item.model_dump())
-
-        return results
+        return self._paginate(all_matches, page, limit)
 
     def get_homepage_featured(self) -> List[Dict]:
         """
@@ -53,17 +66,17 @@ class SearchService:
             if str(item.restaurant_id) in published_ids
         ][:5]
 
-    def browse_homepage(self) -> List[Dict]:
+    def browse_homepage(self, page: int = 1, limit: int = 20) -> List[Dict]:
         """
         Feat3-FR3: Returns all published restaurants for the homepage list.
         """
-        all_res = self.restaurant_repo.load_all()
-        
-        return [
+        all_res = [
             res.model_dump(by_alias=True) 
-            for res in all_res 
+            for res in self.restaurant_repo.load_all() 
             if res.is_published
         ]
+
+        return self._paginate(all_res, page, limit)
 
     def get_restaurant_details(self, restaurant_id: int) -> Optional[Dict]:
         """
