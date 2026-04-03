@@ -1,4 +1,5 @@
-from typing import List, Any
+from typing import Any
+from backend.models.payment.payment_schema import CostBreakdown, PaymentSchema
 
 
 class PaymentService:
@@ -25,6 +26,56 @@ class PaymentService:
             subtotal += item.price * item.quantity
 
         return round(subtotal, 2)
+
+    def calculate_fees_and_taxes(self, subtotal: float) -> dict:
+        """
+        Calculates delivery fee, service fee, and tax based on subtotal
+        """
+        self._validate_subtotal(subtotal)
+
+        delivery_fee = self._calculate_delivery_fee(subtotal)
+        service_fee = self._calculate_service_fee(subtotal)
+        tax = self._calculate_tax(subtotal)
+
+        return {
+            "delivery_fee": delivery_fee,
+            "service_fee": service_fee,
+            "tax": tax,
+        }
+
+    def calculate_total(self, subtotal: float) -> CostBreakdown:
+        """
+        Combines subtotal, fees, and tax into a CostBreakdown object
+        """
+        self._validate_subtotal(subtotal)
+
+        fees = self.calculate_fees_and_taxes(subtotal)
+
+        total = subtotal + fees["delivery_fee"] + fees["service_fee"] + fees["tax"]
+
+        return CostBreakdown(
+            subtotal=subtotal,
+            delivery_fee=fees["delivery_fee"],
+            service_fee=fees["service_fee"],
+            tax=fees["tax"],
+            total=round(total, 2),
+        )
+
+    def retrieve_payment_info(self, payment: PaymentSchema) -> dict:
+        """
+        Retrieves key payment information in dictionary form
+        """
+        self._validate_payment(payment)
+
+        return {
+            "id": payment.id,
+            "order": payment.order,
+            "card_name": payment.card_name,
+            "card_number": payment.card_number,
+            "expiration": payment.expiration,
+            "status": payment.status,
+            "amount": payment.amount,
+        }
 
     # -------------------------
     # Private helpers
@@ -53,3 +104,4 @@ class PaymentService:
             raise ValueError("item quantity must be positive")
 
     #PR2: reopening for review
+   
