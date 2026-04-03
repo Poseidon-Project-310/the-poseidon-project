@@ -1,4 +1,5 @@
 from typing import Any
+from backend.models.payment.payment_schema import CostBreakdown, PaymentSchema
 
 
 class PaymentService:
@@ -42,6 +43,40 @@ class PaymentService:
             "tax": tax,
         }
 
+    def calculate_total(self, subtotal: float) -> CostBreakdown:
+        """
+        Combines subtotal, fees, and tax into a CostBreakdown object
+        """
+        self._validate_subtotal(subtotal)
+
+        fees = self.calculate_fees_and_taxes(subtotal)
+
+        total = subtotal + fees["delivery_fee"] + fees["service_fee"] + fees["tax"]
+
+        return CostBreakdown(
+            subtotal=subtotal,
+            delivery_fee=fees["delivery_fee"],
+            service_fee=fees["service_fee"],
+            tax=fees["tax"],
+            total=round(total, 2),
+        )
+
+    def retrieve_payment_info(self, payment: PaymentSchema) -> dict:
+        """
+        Retrieves key payment information in dictionary form
+        """
+        self._validate_payment(payment)
+
+        return {
+            "id": payment.id,
+            "order": payment.order,
+            "card_name": payment.card_name,
+            "card_number": payment.card_number,
+            "expiration": payment.expiration,
+            "status": payment.status,
+            "amount": payment.amount,
+        }
+
     # -------------------------
     # Private helpers
     # -------------------------
@@ -74,6 +109,10 @@ class PaymentService:
         if subtotal < 0:
             raise ValueError("subtotal cannot be negative")
 
+    def _validate_payment(self, payment: PaymentSchema) -> None:
+        if payment is None:
+            raise ValueError("payment cannot be None")
+
     def _calculate_delivery_fee(self, subtotal: float) -> float:
         return 5.00 if subtotal < 50 else 0.00
 
@@ -84,3 +123,5 @@ class PaymentService:
         return round(subtotal * 0.12, 2)
 
 #PR3: reopening for review
+    
+    

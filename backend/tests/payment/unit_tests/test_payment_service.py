@@ -1,7 +1,6 @@
 import pytest
 from pydantic import ValidationError
 
-
 from backend.models.payment.payment_schema import (
     CostBreakdown,
     PaymentSchema,
@@ -9,7 +8,6 @@ from backend.models.payment.payment_schema import (
     UpdatePaymentSchema,
 )
 from backend.models.payment.payment_service import PaymentService
-
 
 @pytest.fixture
 def base_payment_data():
@@ -25,8 +23,6 @@ def base_payment_data():
     }
 
 
-
-
 @pytest.fixture
 def valid_cost_breakdown_data():
     return {
@@ -38,14 +34,10 @@ def valid_cost_breakdown_data():
     }
 
 
-
-
 class DummyItem:
     def __init__(self, price, quantity):
         self.price = price
         self.quantity = quantity
-
-
 
 
 class DummyOrder:
@@ -55,32 +47,22 @@ class DummyOrder:
 
 def test_calculate_subtotal_valid():
     service = PaymentService()
-
-
     items = [
         DummyItem(price=10.0, quantity=2),
         DummyItem(price=5.0, quantity=3),
     ]
     order = DummyOrder(items)
 
-
     subtotal = service.calculate_subtotal(order)
-
-
+   
     assert subtotal == 35.0
-
-
-
 
 def test_calculate_subtotal_invalid_quantity():
     service = PaymentService()
-
-
     items = [
         DummyItem(price=10.0, quantity=0),
     ]
     order = DummyOrder(items)
-
 
     with pytest.raises(ValueError):
         service.calculate_subtotal(order)
@@ -92,10 +74,9 @@ def test_calculate_subtotal_negative_price():
         DummyItem(price=-5.0, quantity=2),
     ]
     order = DummyOrder(items)
-
-
     with pytest.raises(ValueError):
         service.calculate_subtotal(order)
+
 
 def test_calculate_fees_and_taxes_valid():
     service = PaymentService()
