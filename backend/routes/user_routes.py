@@ -3,10 +3,12 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from backend.services.user_service import UserService
+from backend.services.feat1.user_service import UserService
+from backend.repositories.user_repository import UserRepository
 
 router = APIRouter(prefix="/users", tags=["Users"])
-service = UserService()
+user_repo = UserRepository()
+service = UserService(user_repo)
 
 
 class RegisterRequest(BaseModel):

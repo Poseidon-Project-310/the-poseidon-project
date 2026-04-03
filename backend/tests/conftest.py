@@ -9,13 +9,18 @@ from backend.models.user.user_schema import User
 from backend.schemas.restaurant_schema import Restaurant
 from backend.schemas.items_schema import MenuItem as MenuItemSchema
 from backend.services.search_service import SearchService
+import pytest
+from fastapi.testclient import TestClient
+from backend.main import app  # adjust if your path is different
 
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-
+@pytest.fixture
+def client():
+    return TestClient(app)
 @pytest.fixture
 def restaurant():
         return Restaurant(
