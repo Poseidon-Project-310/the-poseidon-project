@@ -80,3 +80,5 @@ def test_calculate_subtotal_negative_price():
 
     with pytest.raises(ValueError):
         service.calculate_subtotal(order)
+
+#PR2: reopening for review
