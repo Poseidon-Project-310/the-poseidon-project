@@ -122,3 +122,5 @@ def test_calculate_fees_and_taxes_invalid_subtotal():
 
     with pytest.raises(ValueError):
         service.calculate_fees_and_taxes(-10)
+
+#PR3: reopening for review

@@ -82,3 +82,5 @@ class PaymentService:
 
     def _calculate_tax(self, subtotal: float) -> float:
         return round(subtotal * 0.12, 2)
+
+#PR3: reopening for review
