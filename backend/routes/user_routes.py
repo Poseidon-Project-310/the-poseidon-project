@@ -1,0 +1,63 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from backend.repositories.user_repository import UserRepository
+from backend.services.feat1.user_service import UserService
+
+router = APIRouter(prefix="/users", tags=["Users"])
+
+user_repo = UserRepository()
+user_service = UserService(user_repo)
+
+
+class RegisterRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+@router.post("/register")
+def register_user(request: RegisterRequest):
+    try:
+        user = user_service.create_user(
+            username=request.username,
+            email=request.email,
+            password=request.password,
+        )
+
+        return {
+            "message": "user registered successfully",
+            "user": {
+                "id": user["id"],
+                "username": user["username"],
+                "email": user["email"],
+            },
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/login")
+def login_user(request: LoginRequest):
+    try:
+        user = user_service.authenticate_user(
+            username=request.username,
+            password=request.password,
+        )
+
+        return {
+            "message": "login successful",
+            "user": {
+                "id": user["id"],
+                "username": user["username"],
+                "email": user["email"],
+            },
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    
