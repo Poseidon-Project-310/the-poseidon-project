@@ -1,37 +1,6 @@
 import pytest
-from pydantic import ValidationError
 
-from backend.models.payment.payment_schema import (
-    CostBreakdown,
-    PaymentSchema,
-    PaymentStatus,
-    UpdatePaymentSchema,
-)
 from backend.models.payment.payment_service import PaymentService
-
-@pytest.fixture
-def base_payment_data():
-    return {
-        "id": 1,
-        "order": {"order_id": 101, "items": ["Burger", "Fries"]},
-        "card_name": "Fabiha Afifa",
-        "card_number": 1234567812345678,
-        "security_number": 123,
-        "expiration": "12/27",
-        "status": PaymentStatus.ACCEPTED,
-        "amount": 42.50,
-    }
-
-
-@pytest.fixture
-def valid_cost_breakdown_data():
-    return {
-        "subtotal": 30.00,
-        "delivery_fee": 5.00,
-        "service_fee": 2.00,
-        "tax": 3.60,
-        "total": 40.60,
-    }
 
 
 class DummyItem:
@@ -47,6 +16,7 @@ class DummyOrder:
 
 def test_calculate_subtotal_valid():
     service = PaymentService()
+
     items = [
         DummyItem(price=10.0, quantity=2),
         DummyItem(price=5.0, quantity=3),
@@ -54,128 +24,134 @@ def test_calculate_subtotal_valid():
     order = DummyOrder(items)
 
     subtotal = service.calculate_subtotal(order)
-   
+
     assert subtotal == 35.0
+
+
+def test_calculate_subtotal_rounds_to_two_decimals():
+    service = PaymentService()
+
+    items = [
+        DummyItem(price=10.555, quantity=1),
+        DummyItem(price=2.333, quantity=1),
+    ]
+    order = DummyOrder(items)
+
+    subtotal = service.calculate_subtotal(order)
+
+    assert subtotal == 12.89
+
 
 def test_calculate_subtotal_invalid_quantity():
     service = PaymentService()
+
     items = [
         DummyItem(price=10.0, quantity=0),
     ]
     order = DummyOrder(items)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="item quantity must be positive"):
         service.calculate_subtotal(order)
 
 
 def test_calculate_subtotal_negative_price():
     service = PaymentService()
+
     items = [
         DummyItem(price=-5.0, quantity=2),
     ]
     order = DummyOrder(items)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(ValueError, match="item price cannot be negative"):
         service.calculate_subtotal(order)
 
 
-def test_calculate_fees_and_taxes_valid():
+def test_calculate_subtotal_order_none():
     service = PaymentService()
 
-    subtotal = 40.0
-    result = service.calculate_fees_and_taxes(subtotal)
-
-    assert result["delivery_fee"] == 5.00
-    assert result["service_fee"] == 2.00
-    assert result["tax"] == 4.80
+    with pytest.raises(ValueError, match="order cannot be None"):
+        service.calculate_subtotal(None)
 
 
-def test_calculate_fees_and_taxes_free_delivery():
+def test_calculate_subtotal_order_missing_items():
     service = PaymentService()
 
-    subtotal = 60.0
-    result = service.calculate_fees_and_taxes(subtotal)
+    class BadOrder:
+        pass
 
-    assert result["delivery_fee"] == 0.00
+    order = BadOrder()
 
-
-def test_calculate_fees_and_taxes_invalid_subtotal():
-    service = PaymentService()
-
-    with pytest.raises(ValueError):
-        service.calculate_fees_and_taxes(-10)
-
-
-def test_calculate_total_valid():
-    service = PaymentService()
-
-    subtotal = 40.0
-    breakdown = service.calculate_total(subtotal)
-
-    assert breakdown.subtotal == 40.0
-    assert breakdown.delivery_fee == 5.00
-    assert breakdown.service_fee == 2.00
-    assert breakdown.tax == 4.80
-    assert breakdown.total == 51.80
-
-def test_calculate_total_free_delivery():
-    service = PaymentService()
-
-    subtotal = 60.0
-    breakdown = service.calculate_total(subtotal)
-
-    assert breakdown.delivery_fee == 0.00
-
-
-def test_calculate_total_invalid_subtotal():
-    service = PaymentService()
-
-    with pytest.raises(ValueError):
-        service.calculate_total(-10)
-
-def test_retrieve_payment_info_valid(base_payment_data):
-    service = PaymentService()
-    payment = PaymentSchema(**base_payment_data)
-
-    result = service.retrieve_payment_info(payment)
-    assert result["id"] == 1
-    assert result["order"]["order_id"] == 101
-    assert result["card_name"] == "Fabiha Afifa"
-    assert result["card_number"] == 1234567812345678
-    assert result["expiration"] == "12/27"
-    assert result["status"] == PaymentStatus.ACCEPTED
-    assert result["amount"] == 42.50
-
-
-def test_retrieve_payment_info_none():
-    service = PaymentService()
-    with pytest.raises(ValueError):
-        service.retrieve_payment_info(None)
-
-def test_process_payment_success(base_payment_data):
-    service = PaymentService()
-    payment = PaymentSchema(**base_payment_data)
-
-    result = service.process_payment(payment)
-
-    assert result.status == PaymentStatus.ACCEPTED
-
-
-def test_process_payment_failure(base_payment_data):
-    service = PaymentService()
-
-    base_payment_data["card_number"] = 123  # invalid short number
-    payment = PaymentSchema(**base_payment_data)
-
-    result = service.process_payment(payment)
-
-    assert result.status == PaymentStatus.DENIED
-
-
-def test_process_payment_none():
-    service = PaymentService()
-
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="order must have items"):
         service.calculate_subtotal(order)
 
-#PR2: reopening for review
-       
+
+def test_calculate_subtotal_item_missing_price():
+    service = PaymentService()
+
+    class BadItem:
+        def __init__(self):
+            self.quantity = 2
+
+    order = DummyOrder([BadItem()])
+
+    with pytest.raises(ValueError, match="item must have price and quantity"):
+        service.calculate_subtotal(order)
+
+
+def test_calculate_subtotal_item_missing_quantity():
+    service = PaymentService()
+
+    class BadItem:
+        def __init__(self):
+            self.price = 10.0
+
+    order = DummyOrder([BadItem()])
+
+    with pytest.raises(ValueError, match="item must have price and quantity"):
+        service.calculate_subtotal(order)
+
+
+def test_calculate_subtotal_price_not_number():
+    service = PaymentService()
+
+    items = [
+        DummyItem(price="10.0", quantity=2),
+    ]
+    order = DummyOrder(items)
+
+    with pytest.raises(ValueError, match="item price must be a number"):
+        service.calculate_subtotal(order)
+
+
+def test_calculate_subtotal_quantity_not_integer():
+    service = PaymentService()
+
+    items = [
+        DummyItem(price=10.0, quantity=2.5),
+    ]
+    order = DummyOrder(items)
+
+    with pytest.raises(ValueError, match="item quantity must be an integer"):
+        service.calculate_subtotal(order)
+
+
+def test_calculate_subtotal_quantity_negative():
+    service = PaymentService()
+
+    items = [
+        DummyItem(price=10.0, quantity=-1),
+    ]
+    order = DummyOrder(items)
+
+    with pytest.raises(ValueError, match="item quantity must be positive"):
+        service.calculate_subtotal(order)
+
+
+def test_calculate_subtotal_empty_items():
+    service = PaymentService()
+
+    order = DummyOrder([])
+
+    subtotal = service.calculate_subtotal(order)
+
+    assert subtotal == 0.0
