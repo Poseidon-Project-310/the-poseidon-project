@@ -4,7 +4,8 @@ from backend.routes import restaurant_router, search_routes
 app = FastAPI(title="The Poseidon Project")
 
 app.include_router(restaurant_router.router)
-app.include_router(search_routes.router)
+app.include_router(search_routes.router)\
+app.include_router(payment_router.router)
 
 @app.get("/")
 def root():
