@@ -1,6 +1,10 @@
 # backend/routes/review_routes.py
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import Any
+
+from starlette import status
+
+from starlette import status
 
 from backend.schemas.review_schema import ReviewCreate, ReviewUpdate
 from backend.services.review_service import ReviewService
@@ -10,10 +14,12 @@ from backend.repositories.restaurant_repository import RestaurantRepository
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
-# --- Dependency Injection ---
+# --- Dependency ---
 
 def get_review_service():
-    """Initializes the service with all required repositories."""
+    """
+    Helper function to create a ReviewService instance with its required repositories.
+    """
     return ReviewService(
         review_repo=ReviewRepository(),
         order_repo=OrderRepository(),
@@ -22,49 +28,56 @@ def get_review_service():
 
 # --- Endpoints ---
 
-@router.post("/", status_code=201)
+@router.post("", status_code=status.HTTP_201_CREATED)
 def create_review(
-    review_in: ReviewCreate, 
+    review_data: ReviewCreate,
     service: ReviewService = Depends(get_review_service)
 ):
-    """Feat9-FR1/2: Submit a rating and review for a completed order."""
-    result, status = service.submit_review(review_in)
-    
-    if status != 201:
-        return Response(content=result["error"], status_code=status)
+    """
+    POST: Feat9-FR1/2
+    Submit a rating and review for a completed order."""
+    result, code = service.submit_review(review_data)
+    if code != 201:
+        raise HTTPException(status_code=code, detail=result.get("error"))
     return result
 
 @router.get("/restaurant/{restaurant_id}")
 def get_restaurant_reviews(
-    restaurant_id: int, 
+    restaurant_id: int,
     service: ReviewService = Depends(get_review_service)
 ):
-    """Feat9-FR3: View a restaurant's reviews and average rating."""
-    result, status = service.get_restaurant_reviews(restaurant_id)
+    """
+    GET: Feat9-FR3
+    View a restaurant's reviews and average rating
+    """
+    result, code = service.get_restaurant_reviews(restaurant_id)
+    if code != 200:
+        raise HTTPException(status_code=code, detail=result.get("error"))
     return result
 
-@router.patch("/{review_id}")
+@router.put("/{review_id}")
 def update_review(
-    review_id: str, 
-    update_in: ReviewUpdate, 
+    review_id: str,
+    payload: ReviewUpdate,
     service: ReviewService = Depends(get_review_service)
 ):
-    """Feat9-FR4: Edit a review within the 30-minute window."""
-    result, status = service.update_review(review_id, update_in)
-    
-    if status != 200:
-        # result will be {"error": "..."} on failure
-        return Response(content=result["error"], status_code=status)
+    """
+    PUT: Feat9-FR4
+    Edit a review (30-minute window enforced in service)."""
+    result, code = service.update_review(review_id, payload)
+    if code != 200:
+        raise HTTPException(status_code=code, detail=result.get("error"))
     return result
 
 @router.delete("/{review_id}")
 def delete_review(
-    review_id: str, 
+    review_id: str,
     service: ReviewService = Depends(get_review_service)
 ):
-    """Feat9-FR4: Delete a review at any time."""
-    result, status = service.delete_review(review_id)
-    
-    if status != 200:
-        return Response(content=result["error"], status_code=status)
+    """
+    DELETE: Feat9-FR4: Delete a review at any time
+    """
+    result, code = service.delete_review(review_id)
+    if code != 200:
+        raise HTTPException(status_code=code, detail=result.get("error"))
     return result
