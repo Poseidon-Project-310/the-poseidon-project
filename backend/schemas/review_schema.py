@@ -1,21 +1,26 @@
 # backend/schemas/review_schema.py
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional
 from datetime import datetime
 
-# This is a dummy file to allow for review service to be tested
-
 class ReviewBase(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    rating: int = Field(..., ge=1, le=5)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+        validate_assignment=True
+    )
+
+    rating: int = Field(..., ge=1, le=5, description="Rating must be between 1 and 5")
+    comment: Optional[str] = Field(default=None, max_length=1000)
 
 class ReviewCreate(ReviewBase):
     order_id: str
     restaurant_id: int
     customer_id: str
-    comment: str = ""
 
 class ReviewUpdate(BaseModel):
-    rating: int
+    rating: Optional[int] = Field(None, ge=1, le=5)
+    comment: Optional[str] = None
 
 class ReviewDisplay(ReviewBase):
     id: str
