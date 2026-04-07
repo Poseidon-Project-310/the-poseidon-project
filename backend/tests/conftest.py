@@ -80,22 +80,6 @@ def review_service(mock_review_repo, mock_order_repo, mock_restaurant_repo):
         restaurant_repo=mock_restaurant_repo
     )
 
-# --- Monkeypatch fixtures ---
-
-"""
-This fixture will be used for routers
-
-@pytest.fixture
-def mock_review_service_logic(monkeypatch):
-    """"""Monkeypatches the review service in the router for integration tests.""""""
-    mock = MagicMock()
-    # Replace 'backend.routes.review_routes' with your actual router path
-    import backend.routes.review_routes as review_module 
-    monkeypatch.setattr(review_module, "service", mock)
-    return mock
-"""
-
-
 # --- Data fixtures ---
 
 @pytest.fixture
