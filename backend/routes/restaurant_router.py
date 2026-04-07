@@ -88,3 +88,9 @@ def put_restaurant(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.get("error"))
 
     return result
+
+@router.get("", response_model=List[Dict])
+def get_restaurants(service: RestaurantService = Depends(get_restaurant_service)):
+    data = service.get_all_published()
+    print(f"DEBUG: Data found: {data}") # Check your terminal output
+    return data
