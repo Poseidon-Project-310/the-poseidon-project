@@ -11,17 +11,17 @@ class SearchService:
         self.restaurant_repo = restaurant_repo
         self.item_repo = item_repo
     
-    def _calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    def _calculate_distance(self, user_lat: float, user_lon: float, res_lat: float, res_lon: float) -> float:
         """
         Haversine formula to calculate distance in kilometers
         """
         R = 6371.0
         
-        dis_lat = math.radians(lat2 - lat1)
-        dis_lon = math.radians(lon2 - lon1)
+        dis_lat = math.radians(res_lat - user_lat)
+        dis_lon = math.radians(res_lon - user_lon)
         
         a = (math.sin(dis_lat / 2)**2 + 
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dis_lon / 2)**2)
+             math.cos(math.radians(user_lat)) * math.cos(math.radians(res_lat)) * math.sin(dis_lon / 2)**2)
         
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         return R * c
