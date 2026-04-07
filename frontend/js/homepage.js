@@ -36,11 +36,11 @@ async function renderHomepage() {
                 <section class="featured-section">
                     <h2>Trending Now</h2>
                     <div class="horizontal-scroll">
-                        ${(data.featured_items || data.featured || []).map(item => `
+                        ${(data.featured_items || []).map(item => `
                             <div class="item-card-mini">
                                 <span class="price">$${item.price}</span>
                                 <h4>${item.item_name}</h4>
-                                <p class="tag-list">${item.tags && item.tags.length > 0 ? item.tags.join(', ') : 'Fresh'}</p>
+                                <p class="tag-list">${item.tags ? item.tags.join(', ') : 'Fresh'}</p>
                             </div>
                         `).join('')}
                     </div>
