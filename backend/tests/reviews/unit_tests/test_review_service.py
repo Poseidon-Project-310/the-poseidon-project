@@ -35,8 +35,6 @@ def test_submit_review_order_not_found(review_service, mock_order_repo):
     mock_order_repo.load_all.return_value = []
     review_in = ReviewCreate(order_id="fake-id", restaurant_id=1, customer_id="c1", rating=5)
 
-    # Note: If your service uses raise HTTPException, pytest.raises(HTTPException) is used.
-    # If your service returns (result, status) like your restaurant example:
     result, status = review_service.submit_review(review_in) 
     
     assert status == 404
