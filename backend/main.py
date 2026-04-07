@@ -4,8 +4,17 @@ from backend.routes.search_routes import router as search_router
 from backend.routes.notifications_router import router as notification_router
 from backend.routes.payment_router import router as payment_router
 from backend.routes.delivery_router import router as delivery_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="The Poseidon Project")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(restaurant_router)
 app.include_router(search_router)
