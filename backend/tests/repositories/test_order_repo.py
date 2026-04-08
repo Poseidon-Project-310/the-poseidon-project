@@ -87,3 +87,37 @@ def test_save_all_serialization(mock_file):
     
     assert '"id": "xyz789B"' in written_content
     assert '"customer_id": "test_user"' in written_content
+
+@patch.object(OrderRepository, 'load_all')
+def test_find_by_id_success(mock_load_all):
+    """
+    Positive Functional Test
+    Verifies that find_by_id correctly returns the matching order dictionary.
+    """
+    repo = OrderRepository()
+    
+    mock_load_all.return_value = [
+        {"id": "abc123A", "customer_id": "user_1"},
+        {"id": "xyz789B", "customer_id": "user_2"}
+    ]
+
+    result = repo.find_by_id("xyz789B")
+
+    assert result == {"id": "xyz789B", "customer_id": "user_2"}
+
+
+@patch.object(OrderRepository, 'load_all')
+def test_find_by_id_not_found(mock_load_all):
+    """
+    Negative Functional Test
+    Verifies that find_by_id returns None when the target ID does not exist.
+    """
+    repo = OrderRepository()
+    
+    mock_load_all.return_value = [
+        {"id": "abc123A", "customer_id": "user_1"}
+    ]
+
+    result = repo.find_by_id("fake_id_999")
+
+    assert result is None
