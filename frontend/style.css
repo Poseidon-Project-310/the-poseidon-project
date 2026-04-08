@@ -205,3 +205,63 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* --- 5. REVIEWS & RATINGS --- */
+.reviews-section {
+  margin-top: 40px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.review-form {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  border: 1px solid #eef2ff;
+}
+
+.order-subtext {
+  font-size: 0.8rem;
+  color: #4f8ef7;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.rating-select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.review-card {
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.stars { color: #f1c40f; }
+
+.customer-tag {
+  color: #888;
+  font-style: italic;
+}
+
+.info-banner {
+  background: #fff3cd;
+  color: #856404;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #ffeeba;
+}

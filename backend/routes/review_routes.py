@@ -4,8 +4,6 @@ from typing import Any
 
 from starlette import status
 
-from starlette import status
-
 from backend.schemas.review_schema import ReviewCreate, ReviewUpdate
 from backend.services.review_service import ReviewService
 from backend.repositories.review_repository import ReviewRepository
