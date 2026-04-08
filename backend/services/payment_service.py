@@ -14,7 +14,7 @@ class PaymentService:
         Assumes order has:
         - order.items → list of items
         Each item has:
-        - price
+        - price_at_time
         - quantity
         """
         self._validate_order(order)
