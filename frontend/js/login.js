@@ -29,7 +29,6 @@ function renderLogin() {
     </div>
   `;
 
-  // Allow Enter key to submit
   document.addEventListener("keydown", function onEnter(e) {
     if (e.key === "Enter") handleLogin();
   });
@@ -55,7 +54,6 @@ async function handleLogin() {
     const data = await response.json();
 
     if (response.ok) {
-      // Save user so other pages can access it
       localStorage.setItem("user", JSON.stringify(data.user));
       showMessage(msg, "Login successful! Redirecting...", "success");
       setTimeout(() => renderNotifications(), 1000);
