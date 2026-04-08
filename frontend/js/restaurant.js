@@ -2,8 +2,14 @@
 
 async function viewRestaurant(restaurantId) {
     const root = document.getElementById('app-root');
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("user")) || {};
     
+    root.innerHTML = `
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Preparing the menu...</p>
+        </div>
+    `;
    
     try {
         const [resRes, reviewRes, orderRes] = await Promise.all([
@@ -12,18 +18,22 @@ async function viewRestaurant(restaurantId) {
             fetch(`http://localhost:8000/orders`)
         ]);
 
+        if (!resRes.ok) throw new Error('Could not find this restaurant.');
+
         const restaurant = await resRes.json();
         const reviewData = await reviewRes.json();
         const allOrders = await orderRes.json();
 
         let validOrder = null;
-        if (user) {
+        if (user.id) {
             validOrder = allOrders.find(o => 
                 o.customer_id === user.id && 
                 o.restaurant_id === restaurantId && 
                 o.status === "completed"
             );
         }
+
+        window.scrollTo(0, 0);
 
         root.innerHTML = `
             <div class="restaurant-page">
@@ -33,8 +43,33 @@ async function viewRestaurant(restaurantId) {
                     <div class="res-meta">
                         <span>⭐ ${reviewData.average_rating || 'No ratings'}</span>
                         <span>📍 ${restaurant._address}</span>
+                        <span>📞 ${restaurant._phone || 'No phone listed'}</span>
                     </div>
                 </header>
+
+                <div class="menu-container">
+                    <h2>Menu</h2>
+                    <div class="menu-grid">
+                        ${restaurant.full_menu_details.length > 0 ? 
+                            restaurant.full_menu_details.map(item => `
+                            <div class="menu-item">
+                                <div class="item-header">
+                                    <h3>${item.item_name}</h3>
+                                    <span class="price">$${parseFloat(item.price).toFixed(2)}</span>
+                                </div>
+                                <p class="description">${item.description || 'A Poseidon house specialty.'}</p>
+                                <div class="item-footer">
+                                    <div class="tags">
+                                        ${item.tags ? item.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
+                                    </div>
+                                    <button class="add-to-cart-btn" onclick="addToCart('${item.id}', '${item.item_name}', ${item.price})">
+                                        Add to Order
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('') : '<p>This restaurant hasn\'t updated its menu yet.</p>'}
+                    </div>
+                </div>
 
                 <section class="reviews-section">
                     <h2>Reviews</h2>
@@ -67,7 +102,13 @@ async function viewRestaurant(restaurantId) {
             </div>
         `;
     } catch (err) {
-        console.error("Navigation error:", err);
+        root.innerHTML = `
+            <div class="error-box">
+                <h2>Batten down the hatches!</h2>
+                <p>${err.message}</p>
+                <button onclick="renderHomepage()">Return Home</button>
+            </div>
+        `;
     }
 }
 
@@ -104,4 +145,11 @@ function renderReviewForm(restaurantId, orderId) {
             <button type="submit" class="nav-auth-btn">Submit Review to Poseidon</button>
         </form>
     `;
+}
+
+/**
+ * --- HELPER: CART PLACEHOLDER ---
+ */
+function addToCart(itemId, name, price) {
+    alert(`Added ${name} ($${parseFloat(price).toFixed(2)}) to your order!`);
 }
