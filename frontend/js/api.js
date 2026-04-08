@@ -26,7 +26,7 @@ async function submitReview(event, restaurantId, orderId) {
         rating: parseInt(ratingValue),
         comment: commentValue,
         order_id: orderId,
-        restaurant_id: restaurantId,
+        restaurant_id: parseInt(restaurantId),
         customer_id: user.id
     };
 
