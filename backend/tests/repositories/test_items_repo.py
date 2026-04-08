@@ -107,10 +107,8 @@ def test_find_by_id_success(mock_load_all):
     mock_item_2 = MagicMock()
     mock_item_2.item_id = "other-item"
 
-    # Fake the load_all response to return our list of mocks
     mock_load_all.return_value = [mock_item_1, mock_item_2]
 
-    # Search for the specific ID
     result = repo.find_by_id("target-item")
 
     assert result == mock_item_1
