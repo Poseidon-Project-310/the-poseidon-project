@@ -64,3 +64,11 @@ class ItemRepository:
             return True
         except (IOError, TypeError):
             return False
+        
+    def find_by_id(self, target_id: str) -> Optional[MenuItem]:
+        """Fetches all records, but only returns the single matched item."""
+        all_records = self.load_all()
+        return next((
+            item for item in all_records 
+            if str(getattr(item, "item_id", None)) == str(target_id)
+        ), None)
