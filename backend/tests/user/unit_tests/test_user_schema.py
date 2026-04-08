@@ -1,6 +1,10 @@
 import pytest
 
+<<<<<<< HEAD
 from backend.schemas.user.user_schema import User
+=======
+from backend.schemas.user_schema import User
+>>>>>>> order_servicev2
 
 
 def test_user_valid_creation():
