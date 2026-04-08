@@ -76,9 +76,12 @@ async function loadNotifications() {
             ${!n.enabled ? '· <span style="color:#e55">disabled</span>' : ''}
           </div>
         </div>
-        <span class="notif-badge ${n.is_read ? 'read' : ''}">
-          ${n.is_read ? 'read' : 'new'}
-        </span>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
+          <span class="notif-badge ${n.is_read ? 'read' : ''}">
+            ${n.is_read ? 'read' : 'new'}
+          </span>
+          ${!n.is_read ? `<button class="btn-sm" onclick="markAsRead('${n.id}')">✓ Mark as read</button>` : ''}
+        </div>
       </div>
     `).join("");
 
@@ -89,6 +92,18 @@ async function loadNotifications() {
         <p>Could not load notifications.</p>
         <p style="font-size:0.85rem;">Is the backend running?</p>
       </div>`;
+  }
+}
+
+async function markAsRead(notificationId) {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  try {
+    await fetch(`${API_BASE}/notifications/${user.id}/${notificationId}/read`, {
+      method: "POST",
+    });
+    loadNotifications();
+  } catch (err) {
+    console.error("Could not mark notification as read:", err);
   }
 }
 
