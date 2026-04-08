@@ -1,3 +1,4 @@
+# backend/tests/payment/unit_tests/test_payment_service.py
 import pytest
 from pydantic import ValidationError
 
@@ -9,7 +10,6 @@ from backend.schemas.payment_schema import (
     UpdatePaymentSchema,
 )
 from backend.services.payment_service import PaymentService
-
 
 @pytest.fixture
 def base_payment_data():
@@ -35,31 +35,32 @@ def valid_cost_breakdown_data():
         "total": 40.60,
     }
 
-
-
-
-class DummyItem:
-    def __init__(self, price, quantity):
-        self.price = price
-        self.quantity = quantity
-
-
-
-
-class DummyOrder:
-    def __init__(self, items):
-        self.items = items
-
-
+@pytest.fixture
+def dummy_order_data(valid_uuids):
+    return {
+        "id": str(valid_uuids["item_1"]), 
+        "customer_id": "user_1",
+        "restaurant_id": 1,
+        "items": [{"menu_item_id": str(valid_uuids["item_2"]), "quantity": 2, "price_at_time": 9.99}],
+        "status": "unpaid",
+        "cost_breakdown": {
+            "_subtotal": 19.98,
+            "_delivery_fee": 5.00,
+            "_service_fee": 1.00,
+            "_tax": 1.30,
+            "_total": 27.28
+        }
+    }
 
 
 def test_calculate_subtotal_valid():
     service = PaymentService()
-    items = [
-        DummyItem(price=10.0, quantity=2),
-        DummyItem(price=5.0, quantity=3),
-    ]
-    order = DummyOrder(items)
+    order = {
+        "items": [
+            {"price_at_time": 10.0, "quantity": 2},
+            {"price_at_time": 5.0, "quantity": 3},
+        ]
+    }
 
 
     subtotal = service.calculate_subtotal(order)
@@ -69,11 +70,11 @@ def test_calculate_subtotal_valid():
 
 def test_calculate_subtotal_invalid_quantity():
     service = PaymentService()
-    items = [
-        DummyItem(price=10.0, quantity=0),
-    ]
-    order = DummyOrder(items)
-
+    order = {
+        "items": [
+            {"price_at_time": 10.0, "quantity": 0}
+        ]
+    }
 
     with pytest.raises(ValueError):
         service.calculate_subtotal(order)
@@ -83,10 +84,11 @@ def test_calculate_subtotal_invalid_quantity():
 
 def test_calculate_subtotal_negative_price():
     service = PaymentService()
-    items = [
-        DummyItem(price=-5.0, quantity=2),
-    ]
-    order = DummyOrder(items)
+    order = {
+        "items": [
+            {"price_at_time": -5.0, "quantity": 2},
+        ]
+    }
     with pytest.raises(ValueError):
         service.calculate_subtotal(order)
 
