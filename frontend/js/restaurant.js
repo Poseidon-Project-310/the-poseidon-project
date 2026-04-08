@@ -4,6 +4,7 @@ async function viewRestaurant(restaurantId) {
     const root = document.getElementById('app-root');
     const user = JSON.parse(localStorage.getItem("user"));
     
+   
     try {
         const [resRes, reviewRes, orderRes] = await Promise.all([
             fetch(`http://localhost:8000/search/details/${restaurantId}`),
