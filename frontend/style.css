@@ -66,6 +66,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f8f9fa;
+  margin: 0;
   color: #333;
   line-height: 1.6;
   /* Removed the flex-center from body so content can flow down */
@@ -80,6 +81,24 @@ body {
   padding: 20px;
 }
 
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #eee;
+}
+
+.view-res-text {
+  font-size: 0.8rem;
+  color: #4f8ef7;
+  font-weight: bold;
+}
+
+
+
+/* 2. HERO & SEARCH BOX */
 /* --- 3. MENU ITEM GRID (ADDED SECTION) --- */
 .menu-grid {
   /* Creates a responsive grid of food items */
