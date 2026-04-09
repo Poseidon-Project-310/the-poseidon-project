@@ -9,6 +9,8 @@ from backend.routes.payment_router import router as payment_router
 from backend.routes.delivery_router import router as delivery_router
 from backend.routes.review_routes import router as review_router
 from backend.routes.items_routes import router as items_routes
+from backend.routes.cart_router import router as cart_router
+from backend.routes.order_router import router as order_router
 
 app = FastAPI(title="The Poseidon Project")
 
@@ -30,6 +32,8 @@ app.include_router(payment_router)
 app.include_router(delivery_router)
 app.include_router(review_router)
 app.include_router(items_routes)
+app.include_router(cart_router)
+app.include_router(order_router)
 
 @app.get("/")
 def root():
