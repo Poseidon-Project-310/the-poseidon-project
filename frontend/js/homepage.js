@@ -13,35 +13,90 @@ async function renderHomepage() {
 
     try {
 
-        const response = await fetch('http://localhost:8000/search/landing');
+        let nearbyUrl = 'http://localhost:8000/search/landing';
+        // Using a promise-based wrapper for geolocation
+        const pos = await new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(resolve, () => resolve(null));
+        });
+
+        if (pos) {
+            const { latitude, longitude } = pos.coords;
+            // If we have location, hit the nearby endpoint instead
+            nearbyUrl = `http://localhost:8000/search/nearby?lat=${latitude}&lng=${longitude}`;
+        }
+
+        const response = await fetch(nearbyUrl);
         if (!response.ok) throw new Error('Failed to fetch homepage data');
         const data = await response.json();
 
-        const featuredItems = Array.isArray(data.featured) 
-            ? data.featured 
-            : (data.featured ? [data.featured] : []);
+        const mockItems = [
+            {
+                price: "12.99",
+                item_name: "Poseidon's Platter",
+                tags: ["Signature", "Fresh"],
+                rating: 4.8,
+                reviewCount: 124,
+                topReview: "Best seafood I've ever had! The flavors were incredible and the freshness was unmatched."
+            },
+            {
+                price: "18.50",
+                item_name: "Trident Tuna Steak",
+                tags: ["Premium"],
+                rating: null, // No reviews for this one
+                reviewCount: 0,
+                topReview: null
+            },
+        ];
+
+        let featuredItems = [];
+        if (Array.isArray(data.featured) && data.featured.length > 0) {
+            featuredItems = data.featured;
+        } else if (data.featured && typeof data.featured === 'object' && data.featured.item_name) {
+            featuredItems = [data.featured];
+        } else {
+            featuredItems = mockItems; // Fallback to mock so it's never undefined
+        }
 
         const restaurantItems = (data.restaurants && Array.isArray(data.restaurants.items)) 
             ? data.restaurants.items 
             : [];
-
+        
         // Calculate current time to show Open/Closed status
         const currentHour = new Date().getHours();
 
         root.innerHTML = `
-            <div class="home-container">
-                <section class="hero-banner">
+        <div class="home-container">
+            <nav class="navbar">
+                <span class="nav-brand">🔱 Poseidon</span>
+                <div class="nav-links">
+                    ${JSON.parse(localStorage.getItem("user")) ? `
+                        <span>👤 ${JSON.parse(localStorage.getItem("user")).username}</span>
+                        <a href="#" onclick="renderNotifications()">Notifications</a>
+                        <a href="#" onclick="handleLogout()">Log out</a>
+                    ` : `
+                        <a href="#" onclick="renderLogin()">Log In</a>
+                        <a href="#" onclick="renderRegister()">Sign Up</a>
+                    `}
+            </div>
+        </nav>
+        <section class="hero-banner">
                     <h1>🔱 The Poseidon Project 🔱</h1>
                     <p>High-quality meals, delivered at sea-speed.</p>
                     <form class="search-box" onsubmit="handleSearch(event)">
                         <input 
                             type="text" 
                             id="search-input" 
-                            placeholder="Search for food (e.g. Sushi, Pizza)..."
+                            placeholder="Search for food (e.g. Sushi, Burgers)..."
                             required
                         >
                         <button type="submit" class="view-btn">Search</button>
                     </form>
+                    <div class="tag-filters">
+                        <button class="filter-chip" onclick="handleSearch(null, 'Signature')">⭐ Signature</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Premium')">🥩 Premium</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Fresh')">🌿 Fresh</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Burger')">🍔 Burgers</button>
+                    </div>
                 </section>
 
                 <section class="featured-section">
@@ -51,6 +106,18 @@ async function renderHomepage() {
                             <div class="item-card-mini">
                                 <span class="price">$${item.price}</span>
                                 <h4>${item.item_name}</h4>
+
+                                <div class="item-rating">
+                                    ${item.rating 
+                                        ? `
+                                            <span class="stars">⭐ ${item.rating}</span> 
+                                            <span class="review-count">(${item.reviewCount})</span>
+                                            ${item.topReview ? `<p class="featured-review">"${item.topReview}"</p>` : ''}
+                                          ` 
+                                        : `<span class="no-reviews">No reviews yet</span>`
+                                    }
+                                </div>
+
                                 <p class="tag-list">
                                     ${Array.isArray(item.tags) ? item.tags.join(', ') : (item.tags || 'Fresh')}
                                 </p>
@@ -70,7 +137,7 @@ async function renderHomepage() {
                             
                             return `
                                 <div class="res-card ${!isOpen ? 'res-closed-fade' : ''}"
-                                    onclick="viewRestaurant(${res.id})"> <div class="res-badge ${statusClass}">${statusText}</div>
+                                    onclick="viewRestaurant(${res.id})"> 
                                     <div class="res-badge ${statusClass}">${statusText}</div>
                                     <div class="res-info">
                                         <h3>${res.name}</h3>
@@ -103,16 +170,15 @@ async function renderHomepage() {
 /**
 Search and Navbar logic
  */
-async function handleSearch(event) {
-    if (event) event.preventDefault(); 
-    
-    const queryField = document.getElementById('search-input');
-    const query = queryField ? queryField.value.trim() : "";
-    
-    if (query.length >= 2) {
-        // This calls the function inside search.js file
+async function handleSearch(event, tag = null) {
+    if (event) event.preventDefault();
+
+    const inputField = document.getElementById('search-input');
+    const query = tag || (inputField ? inputField.value.trim() : "");
+
+    if (query.length >= 2 || tag) {
         if (typeof renderSearchResults === "function") {
-            renderSearchResults(query);
+            renderSearchResults(query, !!tag);
         } else {
             console.error("search.js is not loaded yet!");
         }
@@ -120,6 +186,7 @@ async function handleSearch(event) {
         alert("Please enter at least 2 characters to search.");
     }
 }
+
 
 // Add a shadow to the navbar when scrolling
 window.addEventListener('scroll', () => {
@@ -132,3 +199,8 @@ window.addEventListener('scroll', () => {
         }
     }
 });
+
+function handleLogout() {
+    localStorage.removeItem("user");
+    renderHomepage();
+}
