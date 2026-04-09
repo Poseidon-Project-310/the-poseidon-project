@@ -1,16 +1,5 @@
 // frontend/js/search.js
 
-/**
- * Search form submission handler
- */
-async function handleSearch(event) {
-    if (event) event.preventDefault();
-    
-    const query = document.getElementById('search-input').value;
-    if (!query || query.length < 2) return;
-
-    renderSearchResults(query);
-}
 
 /**
  * Fetches and displays the search results
