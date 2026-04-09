@@ -13,7 +13,19 @@ async function renderHomepage() {
 
     try {
 
-        const response = await fetch('http://localhost:8000/search/landing');
+        let nearbyUrl = 'http://localhost:8000/search/landing';
+        // Using a promise-based wrapper for geolocation
+        const pos = await new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(resolve, () => resolve(null));
+        });
+
+        if (pos) {
+            const { latitude, longitude } = pos.coords;
+            // If we have location, hit the nearby endpoint instead
+            nearbyUrl = `http://localhost:8000/search/nearby?lat=${latitude}&lng=${longitude}`;
+        }
+
+        const response = await fetch(nearbyUrl);
         if (!response.ok) throw new Error('Failed to fetch homepage data');
         const data = await response.json();
 
@@ -74,11 +86,17 @@ async function renderHomepage() {
                         <input 
                             type="text" 
                             id="search-input" 
-                            placeholder="Search for food (e.g. Sushi, Pizza)..."
+                            placeholder="Search for food (e.g. Sushi, Burgers)..."
                             required
                         >
                         <button type="submit" class="view-btn">Search</button>
                     </form>
+                    <div class="tag-filters">
+                        <button class="filter-chip" onclick="handleSearch(null, 'Signature')">⭐ Signature</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Premium')">🥩 Premium</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Fresh')">🌿 Fresh</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Burger')">🍔 Burgers</button>
+                    </div>
                 </section>
 
                 <section class="featured-section">
@@ -119,7 +137,7 @@ async function renderHomepage() {
                             
                             return `
                                 <div class="res-card ${!isOpen ? 'res-closed-fade' : ''}"
-                                    onclick="viewRestaurant(${res.id})"> <div class="res-badge ${statusClass}">${statusText}</div>
+                                    onclick="viewRestaurant(${res.id})"> 
                                     <div class="res-badge ${statusClass}">${statusText}</div>
                                     <div class="res-info">
                                         <h3>${res.name}</h3>
@@ -152,16 +170,15 @@ async function renderHomepage() {
 /**
 Search and Navbar logic
  */
-async function handleSearch(event) {
-    if (event) event.preventDefault(); 
-    
-    const queryField = document.getElementById('search-input');
-    const query = queryField ? queryField.value.trim() : "";
-    
-    if (query.length >= 2) {
-        // This calls the function inside search.js file
+async function handleSearch(event, tag = null) {
+    if (event) event.preventDefault();
+
+    const inputField = document.getElementById('search-input');
+    const query = tag || (inputField ? inputField.value.trim() : "");
+
+    if (query.length >= 2 || tag) {
         if (typeof renderSearchResults === "function") {
-            renderSearchResults(query);
+            renderSearchResults(query, !!tag);
         } else {
             console.error("search.js is not loaded yet!");
         }
@@ -169,6 +186,7 @@ async function handleSearch(event) {
         alert("Please enter at least 2 characters to search.");
     }
 }
+
 
 // Add a shadow to the navbar when scrolling
 window.addEventListener('scroll', () => {
