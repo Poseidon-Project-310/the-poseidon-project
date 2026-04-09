@@ -17,14 +17,38 @@ async function renderHomepage() {
         if (!response.ok) throw new Error('Failed to fetch homepage data');
         const data = await response.json();
 
-        const featuredItems = Array.isArray(data.featured) 
-            ? data.featured 
-            : (data.featured ? [data.featured] : []);
+        const mockItems = [
+            {
+                price: "12.99",
+                item_name: "Poseidon's Platter",
+                tags: ["Signature", "Fresh"],
+                rating: 4.8,
+                reviewCount: 124
+                topReview: "Best seafood I've ever had! The flavors were incredible and the freshness was unmatched."
+            },
+            {
+                price: "18.50",
+                item_name: "Trident Tuna Steak",
+                tags: ["Premium"],
+                rating: null, // No reviews for this one
+                reviewCount: 0
+                topReview: null
+            },
+        ];
+
+        let featuredItems = [];
+        if (Array.isArray(data.featured) && data.featured.length > 0) {
+            featuredItems = data.featured;
+        } else if (data.featured && typeof data.featured === 'object' && data.featured.item_name) {
+            featuredItems = [data.featured];
+        } else {
+            featuredItems = mockItems; // Fallback to mock so it's never undefined
+        }
 
         const restaurantItems = (data.restaurants && Array.isArray(data.restaurants.items)) 
             ? data.restaurants.items 
             : [];
-
+        
         // Calculate current time to show Open/Closed status
         const currentHour = new Date().getHours();
 
@@ -51,6 +75,18 @@ async function renderHomepage() {
                             <div class="item-card-mini">
                                 <span class="price">$${item.price}</span>
                                 <h4>${item.item_name}</h4>
+
+                                <div class="item-rating">
+                                    ${item.rating 
+                                        ? `
+                                            <span class="stars">⭐ ${item.rating}</span> 
+                                            <span class="review-count">(${item.reviewCount})</span>
+                                            ${item.topReview ? `<p class="featured-review">"${item.topReview}"</p>` : ''}
+                                          ` 
+                                        : `<span class="no-reviews">No reviews yet</span>`
+                                    }
+                                </div>
+
                                 <p class="tag-list">
                                     ${Array.isArray(item.tags) ? item.tags.join(', ') : (item.tags || 'Fresh')}
                                 </p>

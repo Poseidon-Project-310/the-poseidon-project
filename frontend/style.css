@@ -269,8 +269,12 @@ body {
 .view-btn {
   margin-top: 15px;
   background: #1a1a2e;
+  color: white;
   width: auto;
   padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .loading-container {
@@ -304,10 +308,17 @@ body {
 
 .review-form {
   background: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 25px;
+  border-radius: 12px;
   margin-bottom: 30px;
   border: 1px solid #eef2ff;
+}
+
+.rating-group, .comment-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .order-subtext {
@@ -337,6 +348,34 @@ body {
   margin-bottom: 8px;
 }
 
+.rating-group label, .comment-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.comment-group textarea {
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.char-count {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.order-subtext {
+    background: #eef2ff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
 .stars { color: #f1c40f; }
 
 .customer-tag {
@@ -351,4 +390,148 @@ body {
   border-radius: 8px;
   text-align: center;
   border: 1px solid #ffeeba;
+}
+
+/* --- NEW: TRENDING ITEM RATINGS --- */
+.item-rating {
+    font-size: 0.85rem;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stars {
+    color: #f1c40f; /* Gold for the stars */
+    font-weight: bold;
+}
+
+.review-count {
+    color: #777;
+    font-size: 0.75rem;
+}
+
+.no-reviews {
+    color: #bbb;
+    font-style: italic;
+    font-size: 0.75rem;
+}
+
+.featured-review {
+    font-size: 0.75rem;
+    color: #555;
+    background: #f0f4ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+    border-left: 3px solid #4f8ef7;
+    font-style: italic;
+}
+
+/* --- 8. OWNER & MANAGEMENT CONTROLS --- */
+
+.res-hero {
+    position: relative;
+    padding-top: 60px;
+}
+
+.owner-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.edit-btn, .claim-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.edit-btn {
+    background: #f1c40f; /* Gold for "Manage" */
+    color: #1a1a2e;
+}
+
+.edit-btn:hover {
+    background: #d4ac0d;
+    transform: translateY(-2px);
+}
+
+.claim-btn {
+    background: #28a745; /* Green for "Claim" */
+    color: white;
+}
+
+.claim-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+/* Visual feedback for when an owner marks an item "Sold Out" */
+.item-unavailable {
+    opacity: 0.6;
+    background: #f1f1f1 !important;
+    border-style: dashed !important;
+    pointer-events: none; /* Prevents clicking the card itself */
+}
+
+/* Allows buttons inside an unavailable card to still be clickable by owners */
+.item-unavailable .edit-price-btn {
+    pointer-events: auto;
+}
+
+.item-unavailable h3 {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* Styling for the Edit Item button in the menu */
+.edit-price-btn {
+    background: #f1c40f; 
+    color: #1a1a2e;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.edit-price-btn:hover {
+    background: #d4ac0d;
+}
+
+/* Gray out the order button for customers when item is toggled off */
+.add-to-cart-btn:disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+    color: #666;
+}
+
+/* Visibility Badge in the Header (🟢 Public / 🔴 Hidden) */
+.res-meta .tag {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+}
+
+/* Dashboard spacing utility */
+.dashboard-container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-top: 20px;
 }
