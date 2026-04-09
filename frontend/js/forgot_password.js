@@ -25,7 +25,7 @@ function renderForgotPassword() {
         <input type="password" id="confirm" placeholder="Repeat new password">
       </div>
 
-      <button onclick="handleForgotPassword()">Reset Password</button>
+      <button type="submit">Reset Password</button>
 
       <div class="message" id="message"></div>
 
@@ -35,9 +35,13 @@ function renderForgotPassword() {
     </div>
   `;
 
-  document.addEventListener("keydown", function onEnter(e) {
-    if (e.key === "Enter") handleForgotPassword();
-  });
+  const form = document.querySelector(".card form");
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            handleForgotPassword();
+        });
+    }
 }
 
 async function handleForgotPassword() {
