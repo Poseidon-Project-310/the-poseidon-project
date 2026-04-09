@@ -37,10 +37,10 @@ def get_homepage(
     """
     return service.browse_homepage(page=page, limit=limit)
  
-@router.get("/nearby", response_model=List[Dict])
+@router.get("/nearby", response_model=Dict)
 def get_nearby(
-    lat: float = Query(..., description="Latitude of the user (-90 to 90)", ge=-90, le=90),
-    lon: float = Query(..., description="Longitude of the user (-180 to 180)", ge=-180, le=180)):
+    lat: float = Query(..., ge=-90, le=90),
+    lon: float = Query(..., ge=-180, le=180)):
     """
     GET: Returns restaurants sorted by distance from the provided lat/lon
     Calculated in Kilometers

@@ -22,7 +22,7 @@ async function renderHomepage() {
         if (pos) {
             const { latitude, longitude } = pos.coords;
             // If we have location, hit the nearby endpoint instead
-            nearbyUrl = `http://localhost:8000/search/nearby?lat=${latitude}&lng=${longitude}`;
+            nearbyUrl = `http://localhost:8000/search/nearby?lat=${latitude}&lon=${longitude}`;
         }
 
         const response = await fetch(nearbyUrl);
@@ -57,9 +57,22 @@ async function renderHomepage() {
             featuredItems = mockItems; // Fallback to mock so it's never undefined
         }
 
-        const restaurantItems = (data.restaurants && Array.isArray(data.restaurants.items)) 
-            ? data.restaurants.items 
-            : [];
+        let restaurantItems = [];
+        if (data.restaurants && Array.isArray(data.restaurants.items)) {
+            restaurantItems = data.restaurants.items;
+        } else if (Array.isArray(data.restaurants)) {
+            restaurantItems = data.restaurants;
+        } else {
+                restaurantItems = [
+                    {
+                        id: 999,
+                        name: "The Golden Trident",
+                        _address: "123 Kelowna Way",
+                        _open_time: 0,
+                        _close_time: 24
+                    }
+            ];
+        }
         
         // Calculate current time to show Open/Closed status
         const currentHour = new Date().getHours();
