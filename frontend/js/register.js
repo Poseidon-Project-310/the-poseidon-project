@@ -27,7 +27,7 @@ function renderRegister() {
         <input type="password" id="confirm" placeholder="Repeat your password">
       </div>
 
-      <button onclick="handleRegister()">Create Account</button>
+      <button type="submit">Create Account</button>
 
       <div class="message" id="message"></div>
 
@@ -37,9 +37,13 @@ function renderRegister() {
     </div>
   `;
 
-  document.addEventListener("keydown", function onEnter(e) {
-    if (e.key === "Enter") handleRegister();
-  });
+  const form = document.querySelector(".card form");
+  if (form) {
+      form.addEventListener("submit", function(e) {
+          e.preventDefault();
+          handleRegister();
+      });
+  }
 }
 
 async function handleRegister() {
@@ -76,7 +80,7 @@ async function handleRegister() {
     if (response.ok) {
       localStorage.setItem("user", JSON.stringify(data.user));
       showMessage(msg, "Account created! Redirecting...", "success");
-      setTimeout(() => renderNotifications(), 1000);
+      setTimeout(() => renderHomepage(), 1000);
     } else {
       showMessage(msg, data.detail || "Registration failed.", "error");
     }
