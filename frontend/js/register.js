@@ -6,30 +6,31 @@ function renderRegister() {
   root.innerHTML = `
     <div class="card">
       <h1>🔱 Create Account</h1>
+      <form>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Choose a username">
+        </div>
 
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" placeholder="Choose a username">
-      </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email">
+        </div>
 
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="Enter your email">
-      </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Choose a password">
+        </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Choose a password">
-      </div>
+        <div class="form-group">
+          <label for="confirm">Confirm Password</label>
+          <input type="password" id="confirm" placeholder="Repeat your password">
+        </div>
 
-      <div class="form-group">
-        <label for="confirm">Confirm Password</label>
-        <input type="password" id="confirm" placeholder="Repeat your password">
-      </div>
+        <button type="submit">Create Account</button>
 
-      <button type="submit">Create Account</button>
-
-      <div class="message" id="message"></div>
+        <div class="message" id="message"></div>
+      </form>
 
       <div class="link">
         Already have an account? <a href="#" onclick="renderLogin()">Log in</a>
@@ -39,10 +40,10 @@ function renderRegister() {
 
   const form = document.querySelector(".card form");
   if (form) {
-      form.addEventListener("submit", function(e) {
-          e.preventDefault();
-          handleRegister();
-      });
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      handleRegister();
+    });
   }
 }
 
