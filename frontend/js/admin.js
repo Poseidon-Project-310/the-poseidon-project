@@ -4,8 +4,8 @@ function renderAdmin() {
   const root = document.getElementById("app-root");
 
   // Auth guard
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  if (!user) {
+  const user = JSON.parse(localStorage.getItem("user")) || "null";
+  if (!user || !user.is_admin) {
     renderLogin();
     return;
   }
@@ -341,7 +341,7 @@ async function loadOrders(page) {
 
     tbody.innerHTML = d.orders.map(o => `
       <tr>
-        <td><code>${o.order_id}</code></td>
+        <td>${new Date(o.order_time).toLocaleString()}</td>
         <td style="font-size:0.8rem;">${o.customer_id}</td>
         <td>${o.item_name || "—"}</td>
         <td>#${o.restaurant_id}</td>
@@ -387,7 +387,7 @@ async function loadAnalytics() {
     document.getElementById("orders-by-month").innerHTML =
       d.orders_by_month.slice(-12).reverse().map(m => `
         <li>
-          <span>${m.month}</span>
+          <span>${new Date(2026, m.month - 1).toLocaleString('default', { month: 'long' })}</span>
           <strong>${m.count} orders</strong>
         </li>
       `).join("") || "<li>No data</li>";
