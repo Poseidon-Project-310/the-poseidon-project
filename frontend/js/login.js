@@ -59,10 +59,13 @@ async function handleLogin() {
     const data = await response.json();
 
     if (response.ok) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-      showMessage(msg, "Login successful! Redirecting...", "success");
-      setTimeout(() => renderHomepage(), 1000);
-    } else {
+    localStorage.setItem("user", JSON.stringify(data.user));
+    showMessage(msg, "Login successful! Redirecting...", "success");
+    setTimeout(() => {
+        updateNav();
+        renderHomepage();
+    }, 1000);
+    }else {
       showMessage(msg, data.detail || "Login failed.", "error");
     }
 
