@@ -79,10 +79,10 @@ async function renderHomepage() {
                         <button type="submit" class="view-btn">Search</button>
                     </form>
                     <div class="tag-filters">
-                        <button class="filter-chip" onclick="handleSearch(event, 'Sushi')">🍣 Sushi</button>
-                        <button class="filter-chip" onclick="handleSearch(event, 'Pizza')">🍕 Pizza</button>
-                        <button class="filter-chip" onclick="handleSearch(event, 'Vegan')">🌿 Vegan</button>
-                        <button class="filter-chip" onclick="handleSearch(event, 'Burgers')">🍔 Burgers</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Sushi')">🍣 Sushi</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Pizza')">🍕 Pizza</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Vegan')">🌿 Vegan</button>
+                        <button class="filter-chip" onclick="handleSearch(null, 'Burgers')">🍔 Burgers</button>
                     </div>
                 </section>
 
