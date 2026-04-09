@@ -44,7 +44,7 @@ async function viewRestaurant(restaurantId) {
                     <button class="back-link" onclick="renderHomepage()">← Back</button>
                     <div class="owner-controls">
                         ${isOwner ? 
-                            `<button class="edit-btn" onclick="openEditModal(${restaurant.id})">⚙️ Manage Vessel</button>` : ''}
+                            `<button class="edit-btn" onclick="openOwnerDashboard(${restaurant.id})">⚙️ Manage Restaurant</button>` : ''}
                         ${isUnowned ? 
                             `<button class="claim-btn" onclick="handleClaim(${restaurant.id})">⚓ Claim Ownership</button>` : ''}
                     </div>
@@ -75,7 +75,7 @@ async function viewRestaurant(restaurantId) {
                                     </div>
 
                                     ${isOwner ? 
-                                        `<button class="edit-price-btn" onclick="toggleItemAvailability(${restaurant.id}, '${item.id}', ${item.is_available})">
+                                        `<button class="edit-price-btn" onclick="updateItemDetails(${restaurant.id}, '${item.id}', ${item.is_available})">
                                             ${item.is_available ? 'Mark Unavailable' : 'Mark Available'}
                                          </button>` :
                                         `<button class="add-to-cart-btn" ${!item.is_available ? 'disabled' : ''} onclick="addToCart('${item.id}', '${item.item_name}', ${item.price})">
@@ -201,6 +201,7 @@ async function submitReview(event, restaurantId, orderId) {
         });
 
         if (!response.ok) {
+            const errorData = await response.json();
             throw new Error(errorData.detail || 'You can only review orders that have been completed. Please check your order status and try again.');
         }
 
