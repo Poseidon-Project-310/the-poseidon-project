@@ -58,6 +58,8 @@ class OrderService:
         random_letter = random.choice(string.ascii_uppercase)
         return f"{unique_hex}{random_letter}"
 
+    
+
     def create_order(self, payload: OrderCreate) -> Order:
         payment_service = PaymentService()
         
@@ -136,11 +138,12 @@ class OrderService:
         orders.append(new_order_data)
         self.repository.save_all(orders)
 
-        # Clear user's cart
+        # Clear user's cart and save order to user's order history
         users = self.user_repository.load_all()
         for user in users:
             if user.get("id") == payload.customer_id:
                 user["cart"]["items"] = []
+                user["orders"].append(id)
                 break
         self.user_repository.save_all(users)
         
@@ -192,3 +195,27 @@ class OrderService:
 
         self.repository.save_all(orders)
         return Order(**current_order)
+    
+def get_order_by_id(self, order_id: str) -> Order:
+    """Uses the repository's find_by_id to fetch a single order."""
+    order_data = self.repository.find_by_id(order_id)
+    if not order_data:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return Order(**order_data)
+
+def get_orders_by_customer(self, customer_id: str) -> list[Order]:
+    """Fetches the user's order history and retrieves each order by ID."""
+    user = self.user_repository.find_by_id(customer_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    order_ids = user.get("orders", [])
+    
+    # Use find_by_id for each ID in the user's list
+    orders = []
+    for o_id in order_ids:
+        o_data = self.repository.find_by_id(o_id)
+        if o_data:
+            orders.append(Order(**o_data))
+    
+    return orders
