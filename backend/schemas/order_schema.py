@@ -7,7 +7,6 @@ from enum import Enum
 from backend.schemas.cart_schema import OrderItem
 from backend.schemas.payment_schema import CostBreakdown
 
-
 class OrderStatus(str, Enum):
     UNPAID = "unpaid"
     PENDING = "pending"
@@ -29,11 +28,12 @@ class Order(BaseModel):
     delivery_longitude: float
     delivery_postal_code: str
     delivery_instructions: Optional[str] = None
+    # ADDED IN EXTRA FEATURE: Loyalty Program
+    loyalty_points_earned: int = 0
 
 class OrderCreate(BaseModel):
     customer_id: str
     restaurant_id: int
-    items: List[OrderItem]
     delivery_address: Optional[str] = None
     delivery_latitude: float
     delivery_longitude: float
