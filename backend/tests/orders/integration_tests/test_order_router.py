@@ -34,7 +34,9 @@ def test_post_create_order_success(client, mock_order_service, valid_uuids):
         "delivery_latitude": 49.88, 
         "delivery_longitude": -119.49,
         "delivery_postal_code": "V1V 1V1", 
-        "cost_breakdown": 0
+        "cost_breakdown": {
+            "_subtotal": 10.0, "_delivery_fee": 5.0, "_service_fee": 1.0, "_tax": 0.80, "_total": 16.80
+        }
     }
     mock_order_service.create_order.return_value = mock_order
 
@@ -68,7 +70,9 @@ def test_put_update_order_success(client, mock_order_service, valid_uuids):
         "delivery_latitude": 49.88, 
         "delivery_longitude": -119.49,
         "delivery_postal_code": "V1V 1V1", 
-        "cost_breakdown": 0
+        "cost_breakdown": {
+            "_subtotal": 10.0, "_delivery_fee": 5.0, "_service_fee": 1.0, "_tax": 0.80, "_total": 16.80
+        }
     }
     mock_order_service.update_order.return_value = mock_order
 

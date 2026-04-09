@@ -14,7 +14,7 @@ class OrderItemCreate(BaseModel):
     quantity: int
 
 class OrderItemUpdate(BaseModel):
-    quantity: int
+    new_quantity: int
 
 class Cart(BaseModel):
     customer_id: str
