@@ -24,11 +24,5 @@
     "password_hash": "$2b$12$9AxHgQENnB6yCtPvsBLtJuxnlkF9tLQP/gXD76bb9fhke3QqMjpUK",
     "is_admin": true,
     "role": "admin"
-  },
-  {
-    "id": "5",
-    "username": "sirius31",
-    "email": "sirius@gmail.com",
-    "password_hash": "$2b$12$7W8LUy4K3dnZpyScgu9nNuTlJmrLG85ojpFEm425TDpAhichv18H6"
   }
 ]
