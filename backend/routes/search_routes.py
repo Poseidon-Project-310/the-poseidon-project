@@ -45,7 +45,14 @@ def get_nearby(
     GET: Returns restaurants sorted by distance from the provided lat/lon
     Calculated in Kilometers
     """
-    return service.get_nearby_restaurants(lat, lon)
+    nearby_list = service.get_nearby_restaurants(lat, lon)
+    
+    # Wrap it so it matches the /landing structure
+    return {
+        "featured": service.get_homepage_featured(),
+        "restaurants": {"items": nearby_list},
+        "message": "Scanning waters near your coordinates..."
+    }
 
 @router.get("/featured", response_model=List[Dict])
 def get_featured():
