@@ -68,9 +68,10 @@ async function loadNotifications() {
     });
 
     list.innerHTML = notifications.map(n => `
-      <div class="notif-item ${n.is_read ? 'read' : 'unread'} ${!n.enabled ? 'disabled' : ''}">
+    <div class="notif-item ${n.is_read ? 'read' : 'unread'} ${!n.enabled ? 'disabled' : ''}">
         <div>
-          <div class="notif-message">${n.message}</div>
+            ${!n.is_read ? `<button onclick="markAsRead(${n.id})">Mark as read</button>` : ''}
+            <div class="notif-message">${n.message}</div>
           <div class="notif-type">
             Type: ${n.type}
             ${!n.enabled ? '· <span style="color:#e55">disabled</span>' : ''}
@@ -95,4 +96,16 @@ async function loadNotifications() {
 function handleLogout() {
   localStorage.removeItem("user");
   renderHomepage();
+}
+
+async function markAsRead(notificationId) {
+    try {
+        await fetch(`${API_BASE}/notifications/${notificationId}/read`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" }
+        });
+        loadNotifications();
+    } catch (err) {
+        console.error("Could not mark notification as read.", err);
+    }
 }
