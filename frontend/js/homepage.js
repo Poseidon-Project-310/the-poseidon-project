@@ -69,8 +69,18 @@ async function renderHomepage() {
                         name: "The Golden Trident",
                         _address: "123 Kelowna Way",
                         _open_time: 0,
-                        _close_time: 24
-                    }
+                        _close_time: 24,
+                        owner_id: 1
+                    },
+                    {
+                        id: 888,
+                        name: "The Abandoned Anchor",
+                        _address: "Ghost Ship Bay",
+                        _open_time: 10,
+                        _close_time: 22,
+                        owner_id: null,
+                        is_published: false
+        }
             ];
         }
         
