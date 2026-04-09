@@ -17,6 +17,14 @@ async function renderHomepage() {
         if (!response.ok) throw new Error('Failed to fetch homepage data');
         const data = await response.json();
 
+        const featuredItems = Array.isArray(data.featured) 
+            ? data.featured 
+            : (data.featured ? [data.featured] : []);
+
+        const restaurantItems = (data.restaurants && Array.isArray(data.restaurants.items)) 
+            ? data.restaurants.items 
+            : [];
+
         // Calculate current time to show Open/Closed status
         const currentHour = new Date().getHours();
 
@@ -43,7 +51,9 @@ async function renderHomepage() {
                             <div class="item-card-mini">
                                 <span class="price">$${item.price}</span>
                                 <h4>${item.item_name}</h4>
-                                <p class="tag-list">${item.tags ? item.tags.join(', ') : 'Fresh'}</p>
+                                <p class="tag-list">
+                                    ${Array.isArray(item.tags) ? item.tags.join(', ') : (item.tags || 'Fresh')}
+                                </p>
                             </div>
                         `).join('')}
                     </div>
